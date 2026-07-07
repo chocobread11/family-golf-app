@@ -122,7 +122,7 @@ export default function PlayMatch() {
     <div className="w-full max-w-md mx-auto h-[100dvh] bg-white text-black font-sans p-4 pb-14 subpixel-antialiased flex flex-col justify-between overflow-hidden select-none pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
       
       {/* iOS Top Bar Navigation */}
-      <div className="flex items-center justify-between border-b border-[#E5E5EA]/40 pb-4 pt-2 flex-shrink-0">
+      <div className="flex items-center justify-between border-b border-[#E5E5EA]/40 pb-3 pt-1 flex-shrink-0">
         <button 
           onClick={prevStep} 
           disabled={stepIdx === 0} 
@@ -153,10 +153,10 @@ export default function PlayMatch() {
         )}
       </div>
 
-      {/* --- ADAPTIVE MID SNAP ZONE --- */}
-      <div className="flex-1 flex flex-col justify-center min-h-0 space-y-4 py-2">
+      {/* --- FIXED MID SNAP ZONE (Removes flex-center forcing layout squash) --- */}
+      <div className="flex-1 flex flex-col justify-between min-h-0 py-2">
         {/* Input Monitor Block */}
-        <div className="w-full text-center font-mono text-4xl font-black tracking-widest text-[#34C759] min-h-[48px] flex items-center justify-center flex-shrink-0">
+        <div className="w-full text-center font-mono text-4xl font-black tracking-widest text-[#34C759] min-h-[40px] flex items-center justify-center flex-shrink-0">
           {rawString || (
             <span className="text-[#8E8E93] text-[16px] tracking-normal font-sans font-bold opacity-60">
               Fill the score..
@@ -167,7 +167,7 @@ export default function PlayMatch() {
         {/* Dynamic Compacted Roster List Container */}
         <div className="w-full px-6 divide-y divide-[#E5E5EA]/50 overflow-y-auto min-h-0 flex-1">
           {activeGame.players.map((p, idx) => (
-            <div key={p} className="flex justify-between py-3 items-center border-transparent">
+            <div key={p} className="flex justify-between py-2.5 items-center border-transparent">
               <span className="text-sm font-bold text-[#1C1C1E] tracking-tight">{p}</span>
               <span className={`font-mono text-xl font-black tracking-tight transition duration-100 ${currentScores[idx] ? 'text-black' : 'text-[#8E8E93]/20'}`}>
                 {currentScores[idx] || '—'}
