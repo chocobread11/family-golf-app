@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Course {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  pars      Int[]
+  createdAt DateTime @default(now())
+  games     Game[]
+}
+
+model GroupTemplate {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  players   String[]
+  createdAt DateTime @default(now())
+}
+
+model Game {
+  id         String   @id @default(uuid())
+  date       DateTime @default(now())
+  courseId   String
+  totalHoles Int
+  imageUrl   String?
+  players    String[]
+  scoresJson Json
+  createdAt  DateTime @default(now())
+  course     Course   @relation(fields: [courseId], references: [id])
+}

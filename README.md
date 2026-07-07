@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+```markdown
+# 🏌️‍♂️ Family Golf App
 
-## Getting Started
+A premium, high-contrast fintech/iOS-styled golf scorecard and group flight tracker built for smooth mobile tracking and automated cloud syncing.
 
-First, run the development server:
+## 🚀 Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework**: Next.js 16 (App Router)
+- **Database ORM**: Prisma with PostgreSQL Native Client Driver
+- **State Management**: Zustand Cache Engine
+- **Media Engine**: Cloudflare R2 Bucket Object Storage via AWS S3 SDK
+- **Styling**: Tailwind CSS v4 (Uniform `rounded-3xl` Bento System)
+- **Deployment Platform**: Coolify Self-Hosted Container Engine
+
+---
+
+## 🛠️ Getting Started (Local Development)
+
+### 1. Environment Configuration
+Create a `.env` file in the root directory and add your local parameters:
+
+```env
+DATABASE_URL="postgresql://admin:admin123@localhost:5432/family_golf?schema=public"
+
+R2_ACCOUNT_ID="your_cloudflare_account_id"
+R2_ACCESS_KEY_ID="your_s3_access_key"
+R2_SECRET_ACCESS_KEY="your_s3_secret_key"
+R2_BUCKET_NAME="your_bucket_name"
+R2_PUBLIC_DOMAIN="[https://your-custom-r2-subdomain.com](https://your-custom-r2-subdomain.com)"
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies & Database Sync
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run the initialization sequence to bind your database and generate Prisma client mappings:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Install core modules
+bun install
 
-## Learn More
+# Pull schema structural layouts or push mutations to local DB
+bunx prisma db push
 
-To learn more about Next.js, take a look at the following resources:
+# Run seed scripts to hydrate Course Templates and Flight Groups
+bunx prisma db seed
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Spin up the Development Engine
 
-## Deploy on Vercel
+```bash
+bun dev
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) with your mobile browser inspector to check the layout.
+
+---
+
+## 📦 Production Deployment (Coolify Setup)
+
+This app is built to automatically build and migrate inside isolated Coolify runtime containers.
+
+### 1. Build Pack Engine Variable
+
+Set this environment key inside Coolify to ensure the server uses Bun instead of falling back to NPM:
+
+* `NIXPACKS_PKG_MANAGERS` = `bun`
+
+### 2. Deployment Build & Start Orchestration
+
+Configure these exact execution commands inside your Coolify App console:
+
+* **Build Command**: `prisma generate && next build`
+* **Start Command**: `prisma db push && prisma db seed && next start`
+
+*(This automatically ensures migrations are synced and base templates are seeded on every single `git push` command without thread crashes).*
