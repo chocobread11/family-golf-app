@@ -10,7 +10,6 @@ export default function PlayMatch() {
   const [stepIdx, setStepIdx] = useState(0);
   const [rawString, setRawString] = useState('');
 
-  // 1. Calculate values safely even if activeGame is temporarily null
   const totalSteps = activeGame?.totalHoles || 9;
   const loopOffset = activeGame?.startingLoop === 'Back' ? 10 : 1;
   const playedHoles = Array.from({ length: totalSteps }, (_, i) => {
@@ -23,7 +22,6 @@ export default function PlayMatch() {
   const parVal = activeGame?.coursePars[activeHole - 1] || 4;
   const currentScores = rawString.trim().split(/\s+/);
 
-  // 2. State Sync Hook (MUST run before any conditional return statements!)
   useEffect(() => {
     if (!activeGame) return;
 
@@ -36,7 +34,6 @@ export default function PlayMatch() {
     }
   }, [activeHole, activeGame]);
 
-  // 3. Conditional Early Return (Placed safely after all Hooks are fully registered)
   if (!activeGame) {
     return (
       <div className="w-full max-w-md mx-auto h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center antialiased">
@@ -122,7 +119,7 @@ export default function PlayMatch() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-[100dvh] bg-white text-black font-sans p-4 pb-6 flex flex-col justify-between antialiased overflow-hidden select-none">
+    <div className="w-full max-w-md mx-auto h-[100dvh] bg-white text-black font-sans p-4 pb-14 subpixel-antialiased flex flex-col justify-between overflow-hidden select-none pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
       
       {/* iOS Top Bar Navigation */}
       <div className="flex items-center justify-between border-b border-[#E5E5EA]/40 pb-4 pt-2 flex-shrink-0">
@@ -135,7 +132,6 @@ export default function PlayMatch() {
         </button>
         <div className="text-center space-y-0.5">
           <h2 className="text-3xl font-extrabold text-[#1C1C1E] tracking-tight">Hole {activeHole}</h2>
-          {/* ✨ UPDATED: Bigger Par Number Display Badge */}
           <span className="text-s font-bold uppercase tracking-widest text-[#48484A] bg-[#F4F6F9] border border-[#E5E5EA]/40 px-3.5 py-1 rounded-full inline-block">
             Par {parVal}
           </span>
@@ -157,65 +153,59 @@ export default function PlayMatch() {
         )}
       </div>
 
-        {/* --- MINIMALIST OVERSIZED SCORING DISPLAY BLOCKS --- */}
-        <div className="flex-1 flex flex-col justify-center space-y-6 my-4 max-h-[46dvh]">
-        
-        {/* Oversized Input Monitor Row */}
-        <div className="w-full text-center font-mono text-5xl font-black tracking-widest text-[#34C759] min-h-[72px] flex items-center justify-center">
-            {rawString || (
-            <span className="text-[#8E8E93] text-[20px] tracking-normal font-sans font-bold opacity-60">
-                Fill the score..
+      {/* --- ADAPTIVE MID SNAP ZONE --- */}
+      <div className="flex-1 flex flex-col justify-center min-h-0 space-y-4 py-2">
+        {/* Input Monitor Block */}
+        <div className="w-full text-center font-mono text-4xl font-black tracking-widest text-[#34C759] min-h-[48px] flex items-center justify-center flex-shrink-0">
+          {rawString || (
+            <span className="text-[#8E8E93] text-[16px] tracking-normal font-sans font-bold opacity-60">
+              Fill the score..
             </span>
-            )}
+          )}
         </div>
 
-        {/* Borderless High-Contrast Player Roster Matrix */}
-        <div className="w-full px-8 divide-y divide-[#E5E5EA]/50 overflow-y-auto">
-            {activeGame.players.map((p, idx) => (
-            <div key={p} className="flex justify-between py-4 items-center border-transparent">
-                {/* Clean Left Aligned Name String */}
-                <span className="text-base font-bold text-[#1C1C1E] tracking-tight">
-                {p}
-                </span>
-                
-                {/* Right Aligned Oversized Mono Score Text */}
-                <span className={`font-mono text-2xl font-black tracking-tight transition duration-100 ${currentScores[idx] ? 'text-black' : 'text-[#8E8E93]/20'}`}>
+        {/* Dynamic Compacted Roster List Container */}
+        <div className="w-full px-6 divide-y divide-[#E5E5EA]/50 overflow-y-auto min-h-0 flex-1">
+          {activeGame.players.map((p, idx) => (
+            <div key={p} className="flex justify-between py-3 items-center border-transparent">
+              <span className="text-sm font-bold text-[#1C1C1E] tracking-tight">{p}</span>
+              <span className={`font-mono text-xl font-black tracking-tight transition duration-100 ${currentScores[idx] ? 'text-black' : 'text-[#8E8E93]/20'}`}>
                 {currentScores[idx] || '—'}
-                </span>
+              </span>
             </div>
-            ))}
+          ))}
         </div>
       </div>
 
-      {/* Tactile 3x4 iOS Circular Keyboard Grid */}
-      <div className="bg-[#F4F6F9] border border-[#E5E5EA]/40 flex flex-col items-center justify-center p-5 rounded-3xl flex-shrink-0 mb-2 shadow-[0_8px_25px_rgba(0,0,0,0.01)]">
-        <div className="grid grid-cols-3 gap-x-6 gap-y-3.5">
+      {/* --- 100% RESPONSIVE ADAPTIVE DOCK KEYPAD PANEL --- */}
+      <div className="w-full bg-[#F4F6F9] border border-[#E5E5EA]/40 p-4 rounded-3xl flex-shrink-0 shadow-[0_8px_25px_rgba(0,0,0,0.01)] mb-2">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3 w-full">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
             <button 
               key={n} 
               onClick={() => handleKeyPress(String(n))} 
-              className="w-28 h-20 bg-white active:bg-[#E5E5EA]/60 text-[#1C1C1E] text-2xl font-bold rounded-full flex items-center justify-center transition border border-[#E5E5EA]/30 shadow-xs"
+              className="w-full aspect-[4/2.8] bg-white active:bg-[#E5E5EA]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#E5E5EA]/30 shadow-xs"
             >
               {n}
             </button>
           ))}
           <button 
             onClick={() => handleKeyPress('SPACE')} 
-            className="w-28 h-20 bg-[#E8F5E9] active:bg-[#C8E6C9] text-[#2E7D32] border border-[#C8E6C9]/40 rounded-full flex items-center justify-center shadow-xs transition"
+            className="w-full aspect-[4/2.8] bg-[#E8F5E9] active:bg-[#C8E6C9] text-[#2E7D32] border border-[#C8E6C9]/40 rounded-2xl flex items-center justify-center shadow-xs transition"
           >
-            <Space className="w-6 h-6 stroke-[2.5]" />
+            <Space className="w-5 h-5 stroke-[2.5]" />
           </button>
           <button 
             onClick={() => handleKeyPress('0')} 
-            className="w-28 h-20 bg-white active:bg-[#E5E5EA]/60 text-[#1C1C1E] text-2xl font-bold rounded-full flex items-center justify-center transition border border-[#E5E5EA]/30 shadow-xs"
+            className="w-full aspect-[4/2.8] bg-white active:bg-[#E5E5EA]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#E5E5EA]/30 shadow-xs"
           >
             0
           </button>
           <button 
             onClick={() => handleKeyPress('BACK')} 
-            className="w-28 h-20 bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] border border-[#FFCDD2]/40 rounded-full flex items-center justify-center shadow-xs transition"
+            className="w-full aspect-[4/2.8] bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] border border-[#FFCDD2]/40 rounded-2xl flex items-center justify-center shadow-xs transition"
           >
-            <Delete className="w-6 h-6 stroke-[2.5]" />
+            <Delete className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
       </div>
