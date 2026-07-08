@@ -2,7 +2,7 @@
   "name": "family-golf-app",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
+"scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
@@ -13,7 +13,6 @@
     "@aws-sdk/s3-request-presigner": "^3.1080.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "browser-image-compression": "^2.0.2",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",
     "pg": "^8.22.0",
