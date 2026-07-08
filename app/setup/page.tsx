@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGolfStore } from '@/src/store/useGolfStore';
 import { Plus, Camera, ArrowLeft, Trash2, X, RefreshCw, Delete } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 
 export default function GameSetup() {
   const router = useRouter();
@@ -18,9 +19,59 @@ export default function GameSetup() {
   const [newCoursePars, setNewCoursePars] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- R2 Media Storage State Pipeline ---
+  // ✨ FIX: Moved R2 states above the upload handler to prevent hoisting initialization errors
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  const triggerFeedback = () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(12);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      triggerFeedback();
+
+      const options = {
+        maxSizeMB: 0.6,          
+        maxWidthOrHeight: 1600,   
+        fileType: 'image/webp'    
+      };
+
+      console.log("Original File Footprint:", (file.size / 1024 / 1024).toFixed(2), "MB");
+      const webpBlob = await imageCompression(file, options);
+      console.log("Compressed WebP Footprint:", (webpBlob.size / 1024 / 1024).toFixed(2), "MB");
+
+      const signRes = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          filename: file.name, 
+          contentType: 'image/webp' 
+        }),
+      });
+
+      if (!signRes.ok) throw new Error('Signed request mapping failed');
+      const { uploadUrl, publicUrl } = await signRes.json();
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'image/webp' },
+        body: webpBlob,
+      });
+
+      if (!uploadRes.ok) throw new Error('R2 cloud storage rejection');
+      setImageUrl(publicUrl);
+    } catch (err) {
+      console.error('Upload operation failed:', err);
+      alert('Could not attach image to active round storage');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchDatabaseTemplates() {
@@ -42,43 +93,6 @@ export default function GameSetup() {
     }
     fetchDatabaseTemplates();
   }, [syncTemplates]);
-
-  const triggerFeedback = () => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(12);
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      triggerFeedback();
-
-      const signRes = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
-      });
-
-      if (!signRes.ok) throw new Error('Signed request mapping failed');
-      const { uploadUrl, publicUrl } = await signRes.json();
-
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
-      });
-
-      if (!uploadRes.ok) throw new Error('R2 cloud storage rejection');
-      setImageUrl(publicUrl);
-    } catch (err) {
-      console.error('Upload operation failed:', err);
-      alert('Could not attach image to active round storage');
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const handleStart = () => {
     triggerFeedback();
@@ -103,26 +117,21 @@ export default function GameSetup() {
 
   return (
     <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-white text-black font-sans p-4 pb-14 subpixel-antialiased flex flex-col justify-between select-none pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
-            
-        {/* Top Header Navigation Panel */}
-        <div className="relative flex items-center justify-center pt-4 px-1 min-h-[56px] flex-shrink-0 w-full">
-        {/* Absolute aligned back button safely clears text space */}
+      {/* Top Header Navigation Panel */}
+      <div className="relative flex items-center justify-center pt-4 px-1 min-h-[56px] flex-shrink-0 w-full">
         <button 
-            onClick={() => { triggerFeedback(); router.push('/'); }}
-            className="absolute left-1 p-3 bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#1C1C1E] active:bg-[#F1F5F9] rounded-2xl transition shadow-[0_4px_10px_rgba(0,0,0,0.01)] z-10"
+          onClick={() => { triggerFeedback(); router.push('/'); }}
+          className="absolute left-1 p-3 bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#1C1C1E] active:bg-[#F1F5F9] rounded-2xl transition shadow-[0_4px_10px_rgba(0,0,0,0.01)] z-10"
         >
-            <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" />
         </button>
-        
-        {/* Clean, centered text frame */}
         <h1 className="text-2xl font-extrabold tracking-tight text-[#1C1C1E] text-center">
-            Setup Match
+          Setup Match
         </h1>
-        </div>
+      </div>
 
       {/* --- CENTERING MIDDLE WRAPPER ZONE --- */}
       <div className="flex-1 flex flex-col justify-center space-y-6 py-6 min-h-0">
-        
         {/* Media Context Container */}
         <div className="px-1">
           <input 
@@ -247,99 +256,88 @@ export default function GameSetup() {
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Start Button */}
-      <button onClick={handleStart} className="w-full bg-[#059669]  text-white font-bold py-4 rounded-3xl shadow-[0_8px_20px_rgba(52,199,89,0.15)] shrink-0 active:scale-[0.99] transition text-sm tracking-tight mb-2">
+      <button onClick={handleStart} className="w-full bg-[#059669] text-white font-bold py-4 rounded-3xl shadow-[0_8px_20px_rgba(52,199,89,0.15)] shrink-0 active:scale-[0.99] transition text-sm tracking-tight mb-2">
         Start Round
       </button>
 
       {/* Course Entry Modal */}
       {isModalOpen && (
-        /* Centered Backdrop Wrapper via items-center */
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative shadow-2xl border border-[#CBD5E1] animate-scale-up">
-            
-            {/* 1. Top Right Discard Close Button Icon */}
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative shadow-2xl border border-[#CBD5E1] animate-scale-up">
             <button 
-                type="button"
-                onClick={() => { triggerFeedback(); setIsModalOpen(false); }}
-                className="absolute top-4 right-4 p-1.5 text-[#475569] hover:bg-[#F1F5F9] rounded-xl transition"
+              type="button"
+              onClick={() => { triggerFeedback(); setIsModalOpen(false); }}
+              className="absolute top-4 right-4 p-1.5 text-[#475569] hover:bg-[#F1F5F9] rounded-xl transition"
             >
-                <X className="w-5 h-5 stroke-[2.5]" />
+              <X className="w-5 h-5 stroke-[2.5]" />
             </button>
 
-            {/* 2. Modal Header */}
             <h3 className="font-extrabold text-lg text-[#0F172A] mb-4 pr-8">
-                New Course Layout
+              New Course Layout
             </h3>
             
             <div className="space-y-4">
-                {/* 3. Lighter weight, high-contrast text input */}
-                <div>
+              <div>
                 <input 
-                    type="text" 
-                    placeholder="Club / Course Name" 
-                    value={newCourseName} 
-                    onChange={(e) => setNewCourseName(e.target.value)} 
-                    className="w-full p-3.5 bg-[#F1F5F9] border border-[#CBD5E1] text-[#0F172A] rounded-2xl font-medium text-sm focus:outline-none placeholder-[#475569]/60" 
+                  type="text" 
+                  placeholder="Club / Course Name" 
+                  value={newCourseName} 
+                  onChange={(e) => setNewCourseName(e.target.value)} 
+                  className="w-full p-3.5 bg-[#F1F5F9] border border-[#CBD5E1] text-[#0F172A] rounded-2xl font-medium text-sm focus:outline-none placeholder-[#475569]/60" 
                 />
-                </div>
+              </div>
 
-                {/* 4. ✨ NEW LOOK: High-Contrast Premium Obsidian & Amber Gold Monitor */}
-                <div className="bg-[#0F172A] text-[#F59E0B] p-4 rounded-2xl min-h-[56px] flex items-center justify-center font-mono font-black tracking-widest text-xl shadow-inner border border-black">
+              <div className="bg-[#0F172A] text-[#F59E0B] p-4 rounded-2xl min-h-[56px] flex items-center justify-center font-mono font-black tracking-widest text-xl shadow-inner border border-black">
                 {newCoursePars ? (
-                    newCoursePars
+                  newCoursePars
                 ) : (
-                    <span className="text-white font-medium font-sans text-xs tracking-normal animate-pulse">
+                  <span className="text-white font-medium font-sans text-xs tracking-normal animate-pulse">
                     Tap sequence par from the button below...
-                    </span>
+                  </span>
                 )}
-                </div>
+              </div>
 
-                {/* 5. Fluid Tactile Grid Action Matrix */}
-                <div className="grid grid-cols-5 gap-2 w-full">
+              <div className="grid grid-cols-5 gap-2 w-full">
                 {[3, 4, 5].map(num => (
-                    <button 
+                  <button 
                     key={num} 
                     type="button"
                     onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev + num + ' '); }} 
                     className="bg-[#F1F5F9] active:bg-[#CBD5E1] border border-[#CBD5E1] py-3.5 font-black text-lg rounded-xl transition text-[#0F172A] flex items-center justify-center"
-                    >
+                  >
                     {num}
-                    </button>
+                  </button>
                 ))}
 
-                {/* Icon Button: Delete (Amber Highlight) */}
                 <button 
-                    type="button"
-                    onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev.slice(0, -2)); }} 
-                    className="bg-[#FEF3C7] border border-[#FDE68A] text-[#D97706] rounded-xl flex items-center justify-center active:bg-[#FDE68A] transition"
+                  type="button"
+                  onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev.slice(0, -2)); }} 
+                  className="bg-[#FEF3C7] border border-[#FDE68A] text-[#D97706] rounded-xl flex items-center justify-center active:bg-[#FDE68A] transition"
                 >
-                    <Delete className="w-5 h-5 stroke-[2.5]" />
+                  <Trash2 className="w-5 h-5 stroke-[2.5]" />
                 </button>
 
-                {/* Icon Button: Save (Sport Emerald Green) */}
                 <button 
-                    type="button"
-                    onClick={() => {
+                  type="button"
+                  onClick={() => {
                     if(!newCourseName || !newCoursePars) return;
                     triggerFeedback();
                     const parsArray = newCoursePars.trim().split(' ').map(Number);
                     useGolfStore.setState(s => ({ savedCourses: [...s.savedCourses, { id: `c_${Date.now()}`, name: newCourseName, pars: parsArray }] }));
                     setIsModalOpen(false);
-                    }} 
-                    className="bg-[#059669] text-white rounded-xl flex items-center justify-center active:bg-[#047857] shadow-sm shadow-[#059669]/20 transition"
+                  }} 
+                  className="bg-[#059669] text-white rounded-xl flex items-center justify-center active:bg-[#047857] shadow-sm shadow-[#059669]/20 transition"
                 >
-                    <Plus className="w-5 h-5 stroke-3" />
+                  <Plus className="w-5 h-5 stroke-3" />
                 </button>
-                </div>
+              </div>
             </div>
-
-            </div>
+          </div>
         </div>
-        )}
+      )}
     </div>
   );
 }
