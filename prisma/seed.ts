@@ -12,7 +12,11 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Executing family database seed operations...');
+    console.log("🌱 Executing family database seed operations...");
+
+    // Clears out the old records so the seed never runs into duplicate key blocks
+    await prisma.course.deleteMany({});
+    await prisma.groupTemplate.deleteMany({}); // Adjust name according to your schema model
 
   // 1. Inject Core Family group combination template snapshot
   await prisma.groupTemplate.upsert({
