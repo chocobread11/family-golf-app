@@ -47,7 +47,7 @@ export default function ScorePage() {
   });
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-[#F4F6F9] text-black font-sans flex flex-col justify-between pb-6 antialiased select-none">
+    <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-white text-black font-sans flex flex-col justify-between pb-6 antialiased select-none">
       <div className="w-full">
         
         {/* --- DYNAMIC iOS HEADER TRUNK --- */}
@@ -95,11 +95,11 @@ export default function ScorePage() {
           <h3 className="text-[12px] font-bold text-[#8E8E93] uppercase tracking-wider pl-1.5 flex items-center gap-1 pb-2">
             <Table2 className="w-3.5 h-3.5 text-[#FF9500]"/>Score Table
           </h3>
-          <div className="bg-white rounded-3xl border border-[#E5E5EA] shadow-sm overflow-hidden">
+          <div className="bg-white rounded-3xl border border-[#F1F5F9] shadow-sm overflow-hidden">
             <div className="overflow-x-auto block">
               <table className="w-full text-center border-collapse">
                 <thead>
-                  <tr className="bg-[#F4F6F9] text-[#8E8E93] font-bold text-[10px] uppercase tracking-wider border-b border-[#E5E5EA]">
+                  <tr className="bg-[#F4F6F9] text-[#8E8E93] font-bold text-[10px] uppercase tracking-wider border-b border-[#F1F5F9]">
                     <th className="p-3 text-left font-bold text-xs bg-white text-black sticky left-0 shadow-[1px_0_3px_rgba(0,0,0,0.04)] z-10">Player</th>
                     {Array.from({ length: 18 }, (_, i) => i + 1).map(hNum => (
                       game.scoresJson[String(hNum)] ? <th key={hNum} className="p-3 font-mono min-w-[42px] text-xs">H{hNum}</th> : null
@@ -107,7 +107,7 @@ export default function ScorePage() {
                     <th className="p-3 bg-[#E8F5E9] text-[#2E7D32] font-bold text-xs">Tot</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E5E5EA] text-sm font-semibold">
+                <tbody className="divide-y divide-[#F1F5F9] text-sm font-semibold">
                   <tr className="bg-[#F4F6F9]/40 text-[#8E8E93] text-xs">
                     <td className="p-3 text-left font-bold bg-white text-[#8E8E93] sticky left-0 shadow-[1px_0_3px_rgba(0,0,0,0.04)] z-10">Par</td>
                     {Array.from({ length: 18 }, (_, i) => i + 1).map(hNum => (
@@ -144,15 +144,15 @@ export default function ScorePage() {
           <h3 className="text-[12px] font-bold text-[#8E8E93] uppercase tracking-wider pl-1.5 flex items-center gap-1">
             <Trophy className="w-3.5 h-3.5 text-[#FF9500]"/> Performance Grid
           </h3>
-          <div className="bg-white rounded-3xl border border-[#E5E5EA] shadow-sm p-3 overflow-x-auto">
+          <div className="bg-white rounded-3xl border border-[#F1F5F9] shadow-sm p-3 overflow-x-auto">
             <table className="w-full text-xs border-collapse text-center">
               <thead>
-                <tr className="text-[#8E8E93] font-bold border-b border-[#E5E5EA]">
+                <tr className="text-[#8E8E93] font-bold border-b border-[#F1F5F9]">
                   <th className="text-left py-2 font-medium">Metric</th>
                   {game.players.map(p => <th key={p} className="py-2 font-bold text-black">{p}</th>)}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5E5EA]/60 font-medium text-[#48484A]">
+              <tbody className="divide-y divide-[#F1F5F9]/60 font-medium text-[#48484A]">
                 <tr><td className="text-left py-2.5 font-bold text-[#34C759]">Birdies ( -1 )</td>{stats.map((s, i) => <td key={i} className="font-mono">{s.birdie}</td>)}</tr>
                 <tr><td className="text-left py-2.5 font-bold text-[#007AFF]">Pars ( E )</td>{stats.map((s, i) => <td key={i} className="font-mono">{s.par}</td>)}</tr>
                 <tr><td className="text-left py-2.5 font-bold text-[#FF9500]">Bogeys ( +1 )</td>{stats.map((s, i) => <td key={i} className="font-mono">{s.bogey}</td>)}</tr>

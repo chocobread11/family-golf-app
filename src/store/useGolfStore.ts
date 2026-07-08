@@ -42,8 +42,29 @@ export const useGolfStore = create<GolfStore>()(
   persist(
     (set, get) => ({
       history: [],
-      savedCourses: [],
-      savedGroups: [{ id: 'g1', name: 'Full Flight', players: ['Ayah', 'Luqman', 'Umar', 'Abang'] }],
+      
+      // ✨ HARDCODED LOCAL SEED DATA FOR DB-FREE TESTING ON MOBILE
+      savedCourses: [
+        {
+          id: 'c_amverton',
+          name: 'Amverton Cove Golf Resort',
+          pars: [4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4]
+        },
+        {
+          id: 'c_ioicc',
+          name: 'IOI Palm Villa Golf Resort',
+          pars: [4, 4, 3, 5, 4, 4, 5, 3, 4, 4, 4, 3, 5, 4, 4, 3, 5, 4]
+        }
+      ],
+      
+      savedGroups: [
+        { 
+          id: 'g1', 
+          name: 'Core Family Flight', 
+          players: ['Ayah', 'Luqman', 'Abang', 'Umar'] 
+        }
+      ],
+      
       activeGame: null,
 
       startNewGame: (config) => set({
@@ -80,6 +101,7 @@ export const useGolfStore = create<GolfStore>()(
 
       clearActiveGame: () => set({ activeGame: null }),
       
+      // Dynamic fallback safety: Merges fetched records safely alongside default hardcoded arrays
       syncTemplates: (courses, groups) => set((state) => ({
         savedCourses: courses.length > 0 ? courses : state.savedCourses,
         savedGroups: groups.length > 0 ? groups : state.savedGroups,

@@ -84,7 +84,7 @@ export default function Dashboard() {
           </p>
         </div>
         
-        <div className="w-40 h-40 rounded-full overflow-hidden bg-[#E5E5EA] flex-shrink-0">
+        <div className="w-40 h-40 rounded-full overflow-hidden bg-[#F1F5F9] flex-shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src="/golf-family.jpg" 
@@ -96,7 +96,7 @@ export default function Dashboard() {
 
       <div className="space-y-6">
         {/* --- SECTION 1: DYNAMIC HERO HEADER CARD (Slight Gray Contrast) --- */}
-        <div className="bg-[#F4F6F9] rounded-3xl p-5 border border-[#E5E5EA]/50 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex items-center justify-between gap-4">
+        <div className="bg-[#F4F6F9] rounded-3xl p-5 border border-[#F1F5F9]/50 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex items-center justify-between gap-4">
           
           {/* 1/4 Width Fixed Frame Thumbnail Asset */}
           <div className="w-1/4 aspect-square rounded-2xl overflow-hidden flex-shrink-0 relative flex items-center justify-center ">
@@ -138,7 +138,7 @@ export default function Dashboard() {
             <Link 
               href="/setup" 
               onClick={triggerFeedback}
-              className="w-full flex items-center justify-center bg-[#1C1C1E] active:bg-black text-white font-bold py-4 px-6 rounded-3xl active:scale-[0.98] shadow-[0_8px_25px_rgba(0,0,0,0.08)] transition text-sm tracking-tight"
+              className="w-full flex items-center justify-center bg-[#059669] active:bg-black text-white font-bold py-4 px-6 rounded-3xl active:scale-[0.98] shadow-[0_8px_25px_rgba(0,0,0,0.08)] transition text-sm tracking-tight"
             >
               Start a match
             </Link>
@@ -149,13 +149,13 @@ export default function Dashboard() {
         <div className="space-y-3">
           <div className="flex justify-between items-center px-1">
             <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#8E8E93]">Saved Matches</h3>
-            <span className="text-[11px] font-bold bg-[#F4F6F9] border border-[#E5E5EA]/40 text-[#48484A] px-2.5 py-0.5 rounded-full">
+            <span className="text-[11px] font-bold bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#48484A] px-2.5 py-0.5 rounded-full">
               {history.length} Saved Round{history.length !== 1 ? 's' : ''}
             </span>
           </div>
 
           {history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 bg-[#F4F6F9] rounded-3xl border border-[#E5E5EA]/60 text-center">
+            <div className="flex flex-col items-center justify-center p-12 bg-[#F4F6F9] rounded-3xl border border-[#F1F5F9]/60 text-center">
               <Trophy className="w-8 h-8 text-[#C7C7CC] mb-2.5" />
               <p className="text-xs font-semibold text-[#8E8E93]">
                 {isSyncing ? 'Synchronizing database stream...' : 'No golf logs found'}
@@ -174,16 +174,16 @@ export default function Dashboard() {
                     key={game.id} 
                     href={`/score/${game.id}`} 
                     onClick={triggerFeedback}
-                    className="flex items-center justify-between p-3.5 bg-[#F4F6F9] border border-[#E5E5EA]/50 rounded-3xl shadow-[0_4px_15px_rgba(0,0,0,0.005)] active:bg-[#E5E5EA]/50 active:scale-[0.99] transition duration-150 items-stretch"
+                    className="flex items-center justify-between p-3.5 bg-[#F4F6F9] border border-[#F1F5F9]/50 rounded-3xl shadow-[0_4px_15px_rgba(0,0,0,0.005)] active:bg-[#F1F5F9]/50 active:scale-[0.99] transition duration-150 items-stretch"
                   >
                     <div className="flex items-center gap-3.5 flex-1 min-w-0">
                       {game.imageUrl ? (
-                        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-[#E5E5EA]/40 bg-white flex-shrink-0">
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden border border-[#F1F5F9]/40 bg-white flex-shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={game.imageUrl} alt="Round Summary thumb" className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl border border-[#E5E5EA]/40 bg-white text-[#C7C7CC] flex items-center justify-center flex-shrink-0">
+                        <div className="w-14 h-14 rounded-2xl border border-[#F1F5F9]/40 bg-white text-[#C7C7CC] flex items-center justify-center flex-shrink-0">
                           <ImageIcon className="w-4 h-4" />
                         </div>
                       )}
@@ -194,16 +194,16 @@ export default function Dashboard() {
                         </p>
                         
                         <div className="flex items-center gap-2.5 text-[11px] text-[#8E8E93] font-medium">
-                          <span className="flex items-center gap-0.5 text-black/70">
+                          <span className="flex items-center gap-1 text-black/70">
                             <Calendar className="w-3 h-3 text-[#007AFF]"/> 
                             {new Date(game.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                           </span>
-                          <span className="px-1.5 py-0.5 bg-white text-[#48484A] rounded-md font-bold text-[9px] border border-[#E5E5EA]/40">
+                          <span className="px-1.5 py-0.5 bg-white text-[#48484A] rounded-md font-bold text-[9px] border border-[#F1F5F9]/40">
                             {game.totalHoles} Holes
                           </span>
                           {winningScore !== Infinity && winningScore > 0 && (
                             <span className="text-[#34C759] font-mono font-extrabold">
-                              Low: {winningScore}
+                              Lowest: {winningScore}
                             </span>
                           )}
                         </div>
@@ -211,7 +211,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="flex items-center pl-2">
-                      <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#8E8E93] border border-[#E5E5EA]/30 shadow-xs">
+                      <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#8E8E93] border border-[#F1F5F9]/30 shadow-xs">
                         <ChevronRight className="w-4 h-4" />
                       </div>
                     </div>

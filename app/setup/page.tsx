@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGolfStore } from '@/src/store/useGolfStore';
-import { Plus, Camera, ArrowLeft, Trash2, X, RefreshCw } from 'lucide-react';
+import { Plus, Camera, ArrowLeft, Trash2, X, RefreshCw, Delete } from 'lucide-react';
 
 export default function GameSetup() {
   const router = useRouter();
@@ -109,7 +109,7 @@ export default function GameSetup() {
         {/* Absolute aligned back button safely clears text space */}
         <button 
             onClick={() => { triggerFeedback(); router.push('/'); }}
-            className="absolute left-1 p-3 bg-[#F4F6F9] border border-[#E5E5EA]/40 text-[#1C1C1E] active:bg-[#E5E5EA] rounded-2xl transition shadow-[0_4px_10px_rgba(0,0,0,0.01)] z-10"
+            className="absolute left-1 p-3 bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#1C1C1E] active:bg-[#F1F5F9] rounded-2xl transition shadow-[0_4px_10px_rgba(0,0,0,0.01)] z-10"
         >
             <ArrowLeft className="w-4 h-4" />
         </button>
@@ -137,7 +137,7 @@ export default function GameSetup() {
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="w-full aspect-[4/3] flex flex-col items-center justify-center border border-dashed border-[#C7C7CC] bg-[#F4F6F9] rounded-3xl hover:bg-[#E5E5EA]/50 transition duration-150"
+              className="w-full aspect-[4/3] flex flex-col items-center justify-center border border-dashed border-[#C7C7CC] bg-[#F4F6F9] rounded-3xl hover:bg-[#F1F5F9]/50 transition duration-150"
             >
               <Camera className="w-5 h-5 text-[#8E8E93] mb-1" />
               <span className="text-xs font-bold text-[#8E8E93]">
@@ -145,7 +145,7 @@ export default function GameSetup() {
               </span>
             </button>
           ) : (
-            <div className="w-full aspect-[4/3] rounded-3xl overflow-hidden relative border border-[#E5E5EA]/40 shadow-xs bg-[#F4F6F9]">
+            <div className="w-full aspect-[4/3] rounded-3xl overflow-hidden relative border border-[#F1F5F9]/40 shadow-xs bg-[#F4F6F9]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={imageUrl} 
@@ -179,7 +179,7 @@ export default function GameSetup() {
         <div className="px-1 space-y-4">
           <div>
             <label className="text-[11px] font-bold text-[#8E8E93] uppercase tracking-widest block mb-2 pl-0.5">Round Configuration</label>
-            <div className="grid grid-cols-2 gap-1.5 bg-[#F4F6F9] p-1 rounded-2xl border border-[#E5E5EA]/30 text-xs">
+            <div className="grid grid-cols-2 gap-1.5 bg-[#F4F6F9] p-1 rounded-2xl border border-[#F1F5F9]/30 text-xs">
               <button type="button" onClick={() => { triggerFeedback(); setTotalHoles(9); }} className={`py-2.5 rounded-xl font-bold transition ${totalHoles === 9 ? 'bg-[#1C1C1E] text-white shadow-sm' : 'text-[#8E8E93] hover:bg-white/60'}`}>9 Holes</button>
               <button type="button" onClick={() => { triggerFeedback(); setTotalHoles(18); }} className={`py-2.5 rounded-xl font-bold transition ${totalHoles === 18 ? 'bg-[#1C1C1E] text-white shadow-sm' : 'text-[#8E8E93] hover:bg-white/60'}`}>18 Holes</button>
             </div>
@@ -187,7 +187,7 @@ export default function GameSetup() {
 
           <div>
             <label className="text-[11px] font-bold text-[#8E8E93] uppercase tracking-widest block mb-2 pl-0.5">Starting Tee</label>
-            <div className="grid grid-cols-2 gap-1.5 bg-[#F4F6F9] p-1 rounded-2xl border border-[#E5E5EA]/30 text-xs">
+            <div className="grid grid-cols-2 gap-1.5 bg-[#F4F6F9] p-1 rounded-2xl border border-[#F1F5F9]/30 text-xs">
               <button type="button" onClick={() => { triggerFeedback(); setStartingLoop('Front'); }} className={`py-2.5 rounded-xl font-bold transition ${startingLoop === 'Front' ? 'bg-[#1C1C1E] text-white shadow-sm' : 'text-[#8E8E93] hover:bg-white/60'}`}>Front 9 (H1)</button>
               <button type="button" onClick={() => { triggerFeedback(); setStartingLoop('Back'); }} className={`py-2.5 rounded-xl font-bold transition ${startingLoop === 'Back' ? 'bg-[#1C1C1E] text-white shadow-sm' : 'text-[#8E8E93] hover:bg-white/60'}`}>Back 9 (H10)</button>
             </div>
@@ -214,7 +214,7 @@ export default function GameSetup() {
                 <button 
                   type="button"
                   onClick={() => { triggerFeedback(); setIsModalOpen(true); }} 
-                  className="p-1 text-[#007AFF] hover:bg-[#E5E5EA]/60 active:scale-95 rounded-lg transition"
+                  className="p-1 text-[#007AFF] hover:bg-[#F1F5F9]/60 active:scale-95 rounded-lg transition"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -251,36 +251,95 @@ export default function GameSetup() {
       </div>
 
       {/* Start Button */}
-      <button onClick={handleStart} className="w-full bg-[#34C759] text-white font-bold py-4 rounded-3xl shadow-[0_8px_20px_rgba(52,199,89,0.15)] flex-shrink-0 active:scale-[0.99] transition text-sm tracking-tight mb-2">
+      <button onClick={handleStart} className="w-full bg-[#059669]  text-white font-bold py-4 rounded-3xl shadow-[0_8px_20px_rgba(52,199,89,0.15)] shrink-0 active:scale-[0.99] transition text-sm tracking-tight mb-2">
         Start Round
       </button>
 
       {/* Course Entry Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center p-3 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl border border-[#E5E5EA]/30 transform translate-y-0 transition-transform">
-            <h3 className="font-extrabold text-base text-center text-[#1C1C1E]">New Course Layout</h3>
-            <input type="text" placeholder="Club / Course Name" value={newCourseName} onChange={(e)=>setNewCourseName(e.target.value)} className="w-full p-3.5 bg-[#F4F6F9] border border-[#E5E5EA]/20 rounded-2xl font-bold text-sm focus:outline-none placeholder-[#8E8E93]" />
-            <div className="bg-[#1C1C1E] text-[#34C759] p-3.5 rounded-2xl min-h-[46px] text-center font-mono font-bold tracking-widest text-base shadow-inner">
-              {newCoursePars || <span className="text-[#8E8E93] font-normal font-sans text-xs tracking-normal">Tap sequence below</span>}
+        /* Centered Backdrop Wrapper via items-center */
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-3xl w-full max-w-sm p-6 relative shadow-2xl border border-[#CBD5E1] animate-scale-up">
+            
+            {/* 1. Top Right Discard Close Button Icon */}
+            <button 
+                type="button"
+                onClick={() => { triggerFeedback(); setIsModalOpen(false); }}
+                className="absolute top-4 right-4 p-1.5 text-[#475569] hover:bg-[#F1F5F9] rounded-xl transition"
+            >
+                <X className="w-5 h-5 stroke-[2.5]" />
+            </button>
+
+            {/* 2. Modal Header */}
+            <h3 className="font-extrabold text-lg text-[#0F172A] mb-4 pr-8">
+                New Course Layout
+            </h3>
+            
+            <div className="space-y-4">
+                {/* 3. Lighter weight, high-contrast text input */}
+                <div>
+                <input 
+                    type="text" 
+                    placeholder="Club / Course Name" 
+                    value={newCourseName} 
+                    onChange={(e) => setNewCourseName(e.target.value)} 
+                    className="w-full p-3.5 bg-[#F1F5F9] border border-[#CBD5E1] text-[#0F172A] rounded-2xl font-medium text-sm focus:outline-none placeholder-[#475569]/60" 
+                />
+                </div>
+
+                {/* 4. ✨ NEW LOOK: High-Contrast Premium Obsidian & Amber Gold Monitor */}
+                <div className="bg-[#0F172A] text-[#F59E0B] p-4 rounded-2xl min-h-[56px] flex items-center justify-center font-mono font-black tracking-widest text-xl shadow-inner border border-black">
+                {newCoursePars ? (
+                    newCoursePars
+                ) : (
+                    <span className="text-white font-medium font-sans text-xs tracking-normal animate-pulse">
+                    Tap sequence par from the button below...
+                    </span>
+                )}
+                </div>
+
+                {/* 5. Fluid Tactile Grid Action Matrix */}
+                <div className="grid grid-cols-5 gap-2 w-full">
+                {[3, 4, 5].map(num => (
+                    <button 
+                    key={num} 
+                    type="button"
+                    onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev + num + ' '); }} 
+                    className="bg-[#F1F5F9] active:bg-[#CBD5E1] border border-[#CBD5E1] py-3.5 font-black text-lg rounded-xl transition text-[#0F172A] flex items-center justify-center"
+                    >
+                    {num}
+                    </button>
+                ))}
+
+                {/* Icon Button: Delete (Amber Highlight) */}
+                <button 
+                    type="button"
+                    onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev.slice(0, -2)); }} 
+                    className="bg-[#FEF3C7] border border-[#FDE68A] text-[#D97706] rounded-xl flex items-center justify-center active:bg-[#FDE68A] transition"
+                >
+                    <Delete className="w-5 h-5 stroke-[2.5]" />
+                </button>
+
+                {/* Icon Button: Save (Sport Emerald Green) */}
+                <button 
+                    type="button"
+                    onClick={() => {
+                    if(!newCourseName || !newCoursePars) return;
+                    triggerFeedback();
+                    const parsArray = newCoursePars.trim().split(' ').map(Number);
+                    useGolfStore.setState(s => ({ savedCourses: [...s.savedCourses, { id: `c_${Date.now()}`, name: newCourseName, pars: parsArray }] }));
+                    setIsModalOpen(false);
+                    }} 
+                    className="bg-[#059669] text-white rounded-xl flex items-center justify-center active:bg-[#047857] shadow-sm shadow-[#059669]/20 transition"
+                >
+                    <Plus className="w-5 h-5 stroke-3" />
+                </button>
+                </div>
             </div>
-            <div className="grid grid-cols-5 gap-1.5">
-              {[3,4,5].map(num => (
-                <button key={num} onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev + num + ' '); }} className="bg-[#F4F6F9] active:bg-[#E5E5EA] border border-[#E5E5EA]/20 py-3.5 font-extrabold text-base rounded-2xl transition text-[#1C1C1E]">{num}</button>
-              ))}
-              <button onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev.slice(0, -2)); }} className="bg-[#FFE0B2] border border-[#FFE0B2] text-[#E65100] font-bold text-xs uppercase rounded-2xl">Del</button>
-              <button onClick={() => {
-                if(!newCourseName || !newCoursePars) return;
-                triggerFeedback();
-                const parsArray = newCoursePars.trim().split(' ').map(Number);
-                useGolfStore.setState(s => ({ savedCourses: [...s.savedCourses, { id: `c_${Date.now()}`, name: newCourseName, pars: parsArray }] }));
-                setIsModalOpen(false);
-              }} className="bg-[#34C759] text-white font-bold text-xs uppercase rounded-2xl">Save</button>
+
             </div>
-            <button onClick={() => setIsModalOpen(false)} className="w-full text-center text-xs text-[#FF3B30] font-bold pt-1">Discard</button>
-          </div>
         </div>
-      )}
+        )}
     </div>
   );
 }

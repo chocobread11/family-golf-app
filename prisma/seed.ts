@@ -19,7 +19,7 @@ async function main() {
     where: { name: 'Core Family' },
     update: {},
     create: {
-      name: 'Core Family',
+      name: 'Full Flight',
       players: ['Ayah', 'Luqman', 'Abang', 'Umar'],
     },
   });
@@ -33,13 +33,51 @@ async function main() {
     },
   });
 
-  // 2. Inject baseline course profile configuration layout (Original 9-hole snapshot)
-  await prisma.course.upsert({
+  await prisma.groupTemplate.upsert({
+    where: { name: 'Duo Saja' },
+    update: {},
+    create: {
+      name: 'Trio Amverton',
+      players: ['Golfer 1', 'Golfer 2'],
+    },
+  });
+
+// 1. Saujana Impian Golf Club (Fully Expanded to 18-Hole Championship Layout)
+await prisma.course.upsert({
     where: { name: 'Saujana Impian Golf Club' },
     update: {},
     create: {
       name: 'Saujana Impian Golf Club',
-      pars: [4, 4, 3, 5, 4, 3, 4, 4, 5],
+      pars: [
+        4, 3, 5, 4, 5, 4, 3, 4, 4, // Front 9 (Par 36)
+        4, 4, 3, 4, 5, 4, 3, 5, 4  // Back 9 (Par 36)
+      ],
+    },
+  });
+
+  // 2. Berjaya Hills Golf & Country Club (Bukit Tinggi Mountain Resort Course)
+  await prisma.course.upsert({
+    where: { name: 'Berjaya Hills Golf & Country Club' },
+    update: {},
+    create: {
+      name: 'Berjaya Hills Golf & Country Club',
+      pars: [
+        4, 4, 5, 4, 3, 4, 4, 3, 5, // Front 9 (Par 36)
+        5, 4, 4, 3, 4, 4, 3, 4, 5  // Back 9 (Par 36)
+      ],
+    },
+  });
+
+  // 4. Bangi Golf Resort (Classic 18-Hole Combined Loop Blueprint)
+  await prisma.course.upsert({
+    where: { name: 'Bangi Golf Resort' },
+    update: {},
+    create: {
+      name: 'Bangi Golf Resort',
+      pars: [
+        4, 4, 5, 3, 4, 4, 3, 5, 4, // Kajang Loop (Par 36)
+        4, 4, 3, 5, 4, 4, 5, 3, 4  // Bangi Loop (Par 36)
+      ],
     },
   });
 
