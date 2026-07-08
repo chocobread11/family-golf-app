@@ -2,25 +2,20 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
-// Setup connection string context matching your setup parameters
 const connectionString = process.env.DATABASE_URL || "postgresql://admin:admin123@localhost:5432/family_golf?schema=public";
 
 const pool = new pg.Pool({ connectionString });
 const adapter = new PrismaPg(pool);
-
-// Pass the adapter directly to the Prisma Client constructor
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    console.log("🌱 Executing family database seed operations...");
+  console.log("🌱 Executing family database seed operations...");
 
-    // Clears out the old records so the seed never runs into duplicate key blocks
-    await prisma.course.deleteMany({});
-    await prisma.groupTemplate.deleteMany({}); // Adjust name according to your schema model
+  // ⚠️ FIX: Removed .deleteMany({}) to protect live match history entries from relational constraint drops.
 
-  // 1. Inject Core Family group combination template snapshot
+  // --- 1. GROUP TEMPLATE SEEDS (Fixed mismatch where name properties clashed) ---
   await prisma.groupTemplate.upsert({
-    where: { name: 'Core Family' },
+    where: { name: 'Full Flight' },
     update: {},
     create: {
       name: 'Full Flight',
@@ -41,84 +36,101 @@ async function main() {
     where: { name: 'Duo Saja' },
     update: {},
     create: {
-      name: 'Trio Amverton',
+      name: 'Duo Saja',
       players: ['Golfer 1', 'Golfer 2'],
     },
   });
 
-// 1. Saujana Impian Golf Club (Fully Expanded to 18-Hole Championship Layout)
-await prisma.course.upsert({
+  // --- 2. 18-HOLE COURSE TEMPLATE SEEDS (Upserts update existing or append safely) ---
+  await prisma.course.upsert({
     where: { name: 'Saujana Impian Golf Club' },
-    update: {},
+    update: {
+      pars: [
+        4, 3, 5, 4, 5, 4, 3, 4, 4,
+        4, 4, 3, 4, 5, 4, 3, 5, 4
+      ]
+    },
     create: {
       name: 'Saujana Impian Golf Club',
       pars: [
-        4, 3, 5, 4, 5, 4, 3, 4, 4, // Front 9 (Par 36)
-        4, 4, 3, 4, 5, 4, 3, 5, 4  // Back 9 (Par 36)
+        4, 3, 5, 4, 5, 4, 3, 4, 4,
+        4, 4, 3, 4, 5, 4, 3, 5, 4
       ],
     },
   });
 
-  // 2. Berjaya Hills Golf & Country Club (Bukit Tinggi Mountain Resort Course)
   await prisma.course.upsert({
     where: { name: 'Berjaya Hills Golf & Country Club' },
-    update: {},
+    update: {
+      pars: [
+        4, 4, 5, 4, 3, 4, 4, 3, 5,
+        5, 4, 4, 3, 4, 4, 3, 4, 5
+      ]
+    },
     create: {
       name: 'Berjaya Hills Golf & Country Club',
       pars: [
-        4, 4, 5, 4, 3, 4, 4, 3, 5, // Front 9 (Par 36)
-        5, 4, 4, 3, 4, 4, 3, 4, 5  // Back 9 (Par 36)
+        4, 4, 5, 4, 3, 4, 4, 3, 5,
+        5, 4, 4, 3, 4, 4, 3, 4, 5
       ],
     },
   });
 
-  // 4. Bangi Golf Resort (Classic 18-Hole Combined Loop Blueprint)
   await prisma.course.upsert({
     where: { name: 'Bangi Golf Resort' },
-    update: {},
+    update: {
+      pars: [
+        4, 4, 5, 3, 4, 4, 3, 5, 4,
+        4, 4, 3, 5, 4, 4, 5, 3, 4
+      ]
+    },
     create: {
       name: 'Bangi Golf Resort',
       pars: [
-        4, 4, 5, 3, 4, 4, 3, 5, 4, // Kajang Loop (Par 36)
-        4, 4, 3, 5, 4, 4, 5, 3, 4  // Bangi Loop (Par 36)
+        4, 4, 5, 3, 4, 4, 3, 5, 4,
+        4, 4, 3, 5, 4, 4, 5, 3, 4
       ],
     },
   });
 
-  // 3. Amverton Cove Golf & Island Resort (18 Holes - Par 72)
   await prisma.course.upsert({
     where: { name: 'Amverton Cove Golf Resort' },
-    update: {},
+    update: {
+      pars: [4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4]
+    },
     create: {
       name: 'Amverton Cove Golf Resort',
       pars: [4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4],
     },
   });
 
-  // 4. Kinrara Golf Club (18 Holes - Par 72)
   await prisma.course.upsert({
     where: { name: 'Kinrara Golf Club' },
-    update: {},
+    update: {
+      pars: [4, 4, 3, 5, 4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 3, 5, 4, 4]
+    },
     create: {
       name: 'Kinrara Golf Club',
       pars: [4, 4, 3, 5, 4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 3, 5, 4, 4],
     },
   });
 
-  // 5. Bukit Beruntung Golf & Country Resort (18 Holes - Par 72)
   await prisma.course.upsert({
     where: { name: 'Bukit Beruntung Golf Resort' },
-    update: {},
+    update: {
+      pars: [4, 5, 4, 3, 4, 4, 3, 5, 4, 5, 4, 3, 4, 4, 5, 3, 4, 4]
+    },
     create: {
       name: 'Bukit Beruntung Golf Resort',
       pars: [4, 5, 4, 3, 4, 4, 3, 5, 4, 5, 4, 3, 4, 4, 5, 3, 4, 4],
     },
   });
 
-  // 6. Glenmarie Golf & Country Club - Garden Course (18 Holes - Par 72)
   await prisma.course.upsert({
     where: { name: 'Glenmarie Golf & Country Club' },
-    update: {},
+    update: {
+      pars: [4, 4, 5, 3, 4, 4, 5, 3, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4]
+    },
     create: {
       name: 'Glenmarie Golf & Country Club',
       pars: [4, 4, 5, 3, 4, 4, 5, 3, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4],
@@ -135,5 +147,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end(); // Safely teardown open active sockets
+    await pool.end();
   });
