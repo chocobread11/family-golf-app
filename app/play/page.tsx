@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGolfStore } from '@/src/store/useGolfStore';
 import { ChevronLeft, ChevronRight, Delete, Space } from 'lucide-react';
@@ -34,12 +34,24 @@ export default function PlayMatch() {
     }
   }, [activeHole, activeGame]);
 
+  // --- Haptic Feedback Engine ---
+  const triggerFeedback = (type: 'tap' | 'error' | 'success') => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      if (type === 'error') navigator.vibrate([40, 40, 40]);
+      else if (type === 'success') navigator.vibrate([15, 30, 15]);
+      else navigator.vibrate(12); // Standard tap for dials and navigation
+    }
+  };
+
   if (!activeGame) {
     return (
       <div className="w-full max-w-md mx-auto h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center antialiased">
         <p className="text-sm font-bold text-[#8E8E93]">No active round found.</p>
         <button 
-          onClick={() => router.push('/setup')}
+          onClick={() => {
+            triggerFeedback('tap');
+            router.push('/setup');
+          }}
           className="mt-4 px-5 py-3 bg-[#1C1C1E] text-white rounded-2xl font-bold text-xs shadow-sm transition active:scale-[0.98]"
         >
           Setup Match
@@ -48,16 +60,8 @@ export default function PlayMatch() {
     );
   }
 
-  const triggerFeedback = (type: 'tap' | 'error' | 'success') => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      if (type === 'error') navigator.vibrate([40, 40, 40]);
-      else if (type === 'success') navigator.vibrate([15, 30, 15]);
-      else navigator.vibrate(12);
-    }
-  };
-
   const handleKeyPress = (val: string) => {
-    triggerFeedback('tap');
+    triggerFeedback('tap'); // <--- Haptics fire on every dial press here
     if (val === 'BACK') {
       setRawString(prev => prev.slice(0, -1));
     } else if (val === 'SPACE') {
@@ -88,7 +92,7 @@ export default function PlayMatch() {
   };
 
   const handleFinishRound = () => {
-    triggerFeedback('success');
+    triggerFeedback('success'); // <--- Success vibration pattern on finish
     handleSaveHoleState();
     
     const finalSnapshot = saveActiveToHistory();
@@ -105,6 +109,7 @@ export default function PlayMatch() {
   };
 
   const nextStep = () => {
+    triggerFeedback('tap'); // Added haptics for navigation
     handleSaveHoleState();
     if (stepIdx < totalSteps - 1) {
       setStepIdx(p => p + 1);
@@ -112,6 +117,7 @@ export default function PlayMatch() {
   };
 
   const prevStep = () => {
+    triggerFeedback('tap'); // Added haptics for navigation
     handleSaveHoleState();
     if (stepIdx > 0) {
       setStepIdx(p => p - 1);
@@ -153,8 +159,8 @@ export default function PlayMatch() {
         )}
       </div>
 
-        {/* --- STANDARDIZED MID ZONE CONTAINER --- */}
-        <div className="flex-1 grid grid-rows-[auto_1fr] min-h-0 py-2">
+      {/* --- STANDARDIZED MID ZONE CONTAINER --- */}
+      <div className="flex-1 grid grid-rows-[auto_1fr] min-h-0 py-2">
         
         {/* Row 1: Input Monitor Block */}
         <div className="w-full text-center font-mono text-3xl font-black tracking-widest text-[#34C759] h-14 flex items-center justify-center">
@@ -177,7 +183,7 @@ export default function PlayMatch() {
             ))}
         </div>
 
-        </div>
+      </div>
 
       {/* --- 100% RESPONSIVE ADAPTIVE DOCK KEYPAD PANEL --- */}
       <div className="w-full bg-white p-4 rounded-3xl shrink-0 mb-1">
@@ -186,7 +192,7 @@ export default function PlayMatch() {
             <button 
               key={n} 
               onClick={() => handleKeyPress(String(n))} 
-              className="w-full aspect-[4/2.8] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30 "
+              className="w-full aspect-[4/2.8] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30"
             >
               {n}
             </button>
@@ -205,7 +211,7 @@ export default function PlayMatch() {
           </button>
           <button 
             onClick={() => handleKeyPress('BACK')} 
-            className="w-full aspect-[4/2.8] bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828]  rounded-2xl flex items-center justify-center shadow-xs transition"
+            className="w-full aspect-[4/2.8] bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] rounded-2xl flex items-center justify-center shadow-xs transition"
           >
             <Delete className="w-5 h-5 stroke-[2.5]" />
           </button>

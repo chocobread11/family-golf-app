@@ -8,6 +8,8 @@ import { Calendar, ChevronRight, Play, Trophy, RotateCw, Image as ImageIcon } fr
 export default function Dashboard() {
   const router = useRouter();
   const { history, activeGame } = useGolfStore();
+  
+  // Start isSyncing as true so the skeleton shows immediately on mount
   const [isSyncing, setIsSyncing] = useState(true);
   
   // --- Lazy Loading Pagination State ---
@@ -95,10 +97,9 @@ export default function Dashboard() {
       </div>
 
       <div className="space-y-6">
-        {/* --- SECTION 1: DYNAMIC HERO HEADER CARD (Slight Gray Contrast) --- */}
+        {/* --- SECTION 1: DYNAMIC HERO HEADER CARD --- */}
         <div className="bg-[#F4F6F9] rounded-3xl p-5 border border-[#F1F5F9]/50 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex items-center justify-between gap-4">
           
-          {/* 1/4 Width Fixed Frame Thumbnail Asset */}
           <div className="w-1/4 aspect-square rounded-2xl overflow-hidden flex-shrink-0 relative flex items-center justify-center ">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
@@ -111,7 +112,6 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Right-Side Stacked Custom Typography Headers */}
           <div className="flex-1 flex flex-col min-w-0">
             <span className="text-[11px] font-bold text-[#8E8E93] uppercase tracking-widest">Today</span>
             <h2 className="text-2xl font-extrabold text-[#1C1C1E] tracking-tight leading-tight mt-0.5">{stringDay}</h2>
@@ -154,11 +154,27 @@ export default function Dashboard() {
             </span>
           </div>
 
-          {history.length === 0 ? (
+          {/* SKELETON RENDER BLOCK: Displays while database is fetching */}
+          {isSyncing && history.length === 0 ? (
+            <div className="space-y-2.5">
+              {[1, 2, 3].map((skel) => (
+                <div key={skel} className="flex items-center justify-between p-3.5 bg-[#F4F6F9]/60 border border-[#F1F5F9]/30 rounded-3xl animate-pulse">
+                  <div className="flex items-center gap-3.5 flex-1">
+                    <div className="w-14 h-14 rounded-2xl bg-[#E5E5EA] flex-shrink-0"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3.5 bg-[#E5E5EA] rounded-full w-2/3"></div>
+                      <div className="h-2.5 bg-[#E5E5EA] rounded-full w-1/3"></div>
+                    </div>
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-[#E5E5EA] ml-2"></div>
+                </div>
+              ))}
+            </div>
+          ) : history.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-12 bg-[#F4F6F9] rounded-3xl border border-[#F1F5F9]/60 text-center">
               <Trophy className="w-8 h-8 text-[#C7C7CC] mb-2.5" />
               <p className="text-xs font-semibold text-[#8E8E93]">
-                {isSyncing ? 'Synchronizing database stream...' : 'No golf logs found'}
+                No golf logs found
               </p>
             </div>
           ) : (
