@@ -47,7 +47,7 @@ export default function ScorePage() {
   });
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-white text-black font-sans flex flex-col justify-between pb-6 antialiased select-none">
+    <div className="w-full max-w-md md:max-w-xl mx-auto min-h-[100dvh] bg-white text-black font-sans flex flex-col justify-between pb-6 antialiased select-none px-4 md:px-6">
       <div className="w-full">
         
         {/* --- DYNAMIC iOS HEADER TRUNK --- */}

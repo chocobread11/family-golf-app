@@ -102,7 +102,7 @@ export default function GameSetup() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto min-h-[100dvh] bg-white text-black font-sans p-0 md:p-4 pb-14 subpixel-antialiased flex flex-col justify-between select-none pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+    <div className="w-full max-w-xl md:max-w-3xl mx-auto min-h-[100dvh] bg-white text-black font-sans p-0 md:p-4 pb-14 subpixel-antialiased flex flex-col justify-between select-none pb-[calc(3.5rem+env(safe-area-inset-bottom))] px-4 md:px-6">
             
         {/* Top Header Navigation Panel */}
         <div className="relative flex items-center justify-center pt-4 px-1 min-h-[56px] flex-shrink-0 w-full">

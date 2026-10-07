@@ -132,7 +132,7 @@ export default function PlayMatch() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-[100dvh] bg-white text-black font-sans p-6 subpixel-antialiased flex flex-col justify-between overflow-hidden select-none pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+    <div className="w-full max-w-md md:max-w-xl mx-auto h-[100dvh] bg-white text-black font-sans p-6 subpixel-antialiased flex flex-col justify-between overflow-hidden select-none pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
       
       {/* iOS Top Bar Navigation */}
       <div className="flex items-center justify-between pb-3 pt-1 flex-shrink-0">
