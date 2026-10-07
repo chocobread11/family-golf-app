@@ -74,7 +74,7 @@ export default function Dashboard() {
   const stringFullDate = today.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-white text-black font-sans antialiased p-4 pb-6 flex flex-col justify-start select-none">
+    <div className="w-full max-w-4xl mx-auto min-h-[100dvh] bg-white text-black font-sans antialiased p-0 md:p-6 flex flex-col justify-start select-none">
       
       <div className="flex items-center justify-between px-1.5 py-4 p-5 mb-4 shadow-[0_8px_25px_rgba(0,0,0,0.01)]">
         <div className="space-y-0.5">

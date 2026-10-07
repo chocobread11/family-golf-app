@@ -102,7 +102,7 @@ export default function GameSetup() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-[100dvh] bg-white text-black font-sans p-4 pb-14 subpixel-antialiased flex flex-col justify-between select-none pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
+    <div className="w-full max-w-4xl mx-auto min-h-[100dvh] bg-white text-black font-sans p-0 md:p-4 pb-14 subpixel-antialiased flex flex-col justify-between select-none pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
             
         {/* Top Header Navigation Panel */}
         <div className="relative flex items-center justify-center pt-4 px-1 min-h-[56px] flex-shrink-0 w-full">
@@ -124,7 +124,7 @@ export default function GameSetup() {
       <div className="flex-1 flex flex-col justify-center space-y-6 py-6 min-h-0">
         
         {/* Media Context Container */}
-        <div className="px-1">
+        <div className="px-1 max-w-xl mx-auto w-full">
           <input 
             type="file" 
             accept="image/*" 
@@ -264,7 +264,7 @@ export default function GameSetup() {
             {/* 1. Top Right Discard Close Button Icon */}
             <button 
                 type="button"
-                onClick={() => { triggerFeedback(); setIsModalOpen(false); }}
+                onClick={() => { triggerFeedback(); setIsModalOpen(false); setNewCourseName(''); setNewCoursePars(''); }}
                 className="absolute top-4 right-4 p-1.5 text-[#475569] hover:bg-[#F1F5F9] rounded-xl transition"
             >
                 <X className="w-5 h-5 stroke-[2.5]" />
@@ -283,20 +283,38 @@ export default function GameSetup() {
                     placeholder="Club / Course Name" 
                     value={newCourseName} 
                     onChange={(e) => setNewCourseName(e.target.value)} 
-                    className="w-full p-3.5 bg-[#F1F5F9] border border-[#CBD5E1] text-[#0F172A] rounded-2xl font-medium text-sm focus:outline-none placeholder-[#475569]/60" 
+                    className="w-full p-3.5 bg-[#F1F5F9]  min-h-[62px] border border-[#CBD5E1] text-[#0F172A] rounded-2xl font-medium text-md focus:outline-none placeholder-[#475569]/60" 
                 />
                 </div>
 
                 {/* 4. ✨ NEW LOOK: High-Contrast Premium Obsidian & Amber Gold Monitor */}
-                <div className="bg-[#0F172A] text-[#F59E0B] p-4 rounded-2xl min-h-[56px] flex items-center justify-center font-mono font-black tracking-widest text-xl shadow-inner border border-black">
-                {newCoursePars ? (
-                    newCoursePars
-                ) : (
-                    <span className="text-white font-medium font-sans text-xs tracking-normal animate-pulse">
-                    Tap sequence par from the button below...
-                    </span>
-                )}
-                </div>
+                {(() => {
+                  const parsList = newCoursePars.trim() ? newCoursePars.trim().split(' ') : [];
+                  const holeCount = parsList.length;
+                  const isExceeded = holeCount > 18;
+                  const row1 = parsList.slice(0, 9).join(' ');
+                  const row2 = parsList.slice(9).join(' ');
+
+                  return (
+                    <div className={`p-4 rounded-2xl min-h-[62px] flex flex-col items-center justify-center font-mono font-black tracking-widest text-xl shadow-inner border transition-colors ${isExceeded ? 'bg-red-950 text-red-400 border-red-600' : 'bg-[#0F172A] text-[#F59E0B] border-black'}`}>
+                      {holeCount > 0 ? (
+                        <>
+                          <div className="text-center space-y-1 leading-tight">
+                            <div>{row1}</div>
+                            {row2 && <div>{row2}</div>}
+                          </div>
+                          <span className={`font-sans text-[10px] tracking-normal mt-2 font-bold ${isExceeded ? 'text-red-400' : 'text-slate-400'}`}>
+                            {holeCount}/18 holes {isExceeded && '(Max 18 exceeded)'}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-white font-medium font-sans text-xs tracking-normal animate-pulse">
+                          Tap sequence par from the button below...
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* 5. Fluid Tactile Grid Action Matrix */}
                 <div className="grid grid-cols-5 gap-2 w-full">
@@ -305,7 +323,7 @@ export default function GameSetup() {
                     key={num} 
                     type="button"
                     onClick={() => { triggerFeedback(); setNewCoursePars(prev => prev + num + ' '); }} 
-                    className="bg-[#F1F5F9] active:bg-[#CBD5E1] border border-[#CBD5E1] py-3.5 font-black text-lg rounded-xl transition text-[#0F172A] flex items-center justify-center"
+                    className="bg-[#F1F5F9] active:bg-[#059669] border border-[#CBD5E1] py-3.5 font-black text-lg rounded-xl transition text-[#0F172A] flex items-center justify-center"
                     >
                     {num}
                     </button>
@@ -325,10 +343,13 @@ export default function GameSetup() {
                     type="button"
                     onClick={() => {
                     if(!newCourseName || !newCoursePars) return;
-                    triggerFeedback();
                     const parsArray = newCoursePars.trim().split(' ').map(Number);
+                    if (parsArray.length > 18) return;
+                    triggerFeedback();
                     useGolfStore.setState(s => ({ savedCourses: [...s.savedCourses, { id: `c_${Date.now()}`, name: newCourseName, pars: parsArray }] }));
                     setIsModalOpen(false);
+                    setNewCourseName('');
+                    setNewCoursePars('');
                     }} 
                     className="bg-[#059669] text-white rounded-xl flex items-center justify-center active:bg-[#047857] shadow-sm shadow-[#059669]/20 transition"
                 >

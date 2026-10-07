@@ -14,7 +14,14 @@ export default function PlayMatch() {
   const loopOffset = activeGame?.startingLoop === 'Back' ? 10 : 1;
   const playedHoles = Array.from({ length: totalSteps }, (_, i) => {
     let num = i + loopOffset;
-    if (num > 18) num -= 18;
+    if (activeGame?.totalHoles === 9 && activeGame?.startingLoop === 'Back') {
+      // If playing 9 holes starting from Back, holes are 10-18
+      num = 10 + i;
+    } else {
+      // Standard calculation
+      num = i + loopOffset;
+      if (num > 18) num -= (num > 18 ? 18 : 0);
+    }
     return num;
   });
 
