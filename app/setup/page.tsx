@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Delete,
   ChevronDown,
-  Flag,
   RotateCw,
 } from 'lucide-react';
 
@@ -125,28 +124,28 @@ export default function GameSetup() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-xl flex-col bg-background px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] font-sans text-foreground subpixel-antialiased select-none md:max-w-3xl md:px-6">
-      {/* Top Header Navigation Panel */}
-      <header className="relative flex min-h-[56px] w-full flex-shrink-0 items-center justify-center pt-2">
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-xl flex-col bg-white px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] font-sans text-[#111111] subpixel-antialiased select-none md:max-w-3xl md:px-8">
+      {/* Header */}
+      <header className="flex items-center gap-3 pb-2 pt-4">
         <button
           onClick={() => {
             triggerFeedback();
             router.push('/');
           }}
-          className="absolute left-0 z-10 flex h-10 w-10 items-center justify-center rounded-2xl border border-line bg-surface text-foreground shadow-[0_2px_8px_rgba(28,28,30,0.05)] transition active:scale-95 active:bg-[#F3F0E9]"
+          className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition active:scale-95 active:bg-neutral-100"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-5 w-5" />
         </button>
-
-        <div className="text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-forest">New Round</p>
-          <h1 className="mt-0.5 text-xl font-extrabold tracking-tight text-foreground">Setup Match</h1>
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400">
+            New round
+          </p>
+          <h1 className="mt-1 text-lg font-semibold leading-none tracking-tight">Setup match</h1>
         </div>
       </header>
 
-      {/* --- CENTERING MIDDLE WRAPPER ZONE --- */}
-      <div className="flex min-h-0 flex-1 flex-col justify-center space-y-5 py-6">
-        {/* Media Context Container */}
+      <div className="flex min-h-0 flex-1 flex-col space-y-7 py-7">
+        {/* Media */}
         <div className="w-full">
           <input
             type="file"
@@ -160,24 +159,22 @@ export default function GameSetup() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="group flex aspect-[16/10] max-h-[320px] w-full flex-col items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-[#D8D2C6] bg-surface/60 transition duration-150 hover:border-forest/40 hover:bg-surface disabled:opacity-60"
+              className="flex aspect-[16/10] max-h-[300px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-neutral-300 bg-white transition hover:border-neutral-400 disabled:opacity-50"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF3EC] text-forest transition group-hover:scale-105">
-                {isUploading ? (
-                  <RotateCw className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Camera className="h-5 w-5" />
-                )}
-              </span>
-              <span className="text-sm font-bold text-[#6B6B70]">
+              {isUploading ? (
+                <RotateCw className="h-5 w-5 animate-spin text-neutral-400" />
+              ) : (
+                <Camera className="h-5 w-5 text-neutral-400" />
+              )}
+              <span className="text-sm font-medium text-neutral-600">
                 {isUploading ? 'Uploading photo...' : 'Add a round photo'}
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#A3A3A8]">
+              <span className="text-[10px] font-normal uppercase tracking-[0.14em] text-neutral-400">
                 Optional · Tap to select
               </span>
             </button>
           ) : (
-            <div className="relative aspect-[16/10] max-h-[320px] w-full overflow-hidden rounded-3xl border border-line bg-[#EFEAE0] shadow-[0_14px_30px_-24px_rgba(28,28,30,0.6)]">
+            <div className="relative aspect-[16/10] max-h-[300px] w-full overflow-hidden rounded-2xl bg-neutral-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
@@ -185,15 +182,13 @@ export default function GameSetup() {
                 className="h-full w-full object-cover"
               />
 
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
-
-              <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
+              <div className="absolute right-3 top-3 z-10 flex gap-2">
                 <button
                   onClick={() => {
                     triggerFeedback();
                     fileInputRef.current?.click();
                   }}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white shadow-md backdrop-blur-md transition active:bg-black/60"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition active:bg-black/60"
                 >
                   <RefreshCw className="h-4 w-4" />
                 </button>
@@ -202,15 +197,14 @@ export default function GameSetup() {
                     triggerFeedback();
                     setImageUrl(null);
                   }}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-[#FF453A] shadow-md backdrop-blur-md transition active:bg-black/60"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition active:bg-black/60"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
 
               <div className="absolute bottom-3 left-3 z-10">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur-md">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#34C759]" />
+                <span className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.14em] text-white backdrop-blur-sm">
                   Round photo
                 </span>
               </div>
@@ -218,59 +212,48 @@ export default function GameSetup() {
           )}
         </div>
 
-        {/* Selection Tab Section */}
-        <div className="space-y-4 rounded-3xl border border-line bg-surface p-4 shadow-[0_1px_2px_rgba(28,28,30,0.03)]">
+        {/* Config */}
+        <section className="space-y-5">
           <div>
-            <label className="mb-2 block pl-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-              Round Length
+            <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Round length
             </label>
-            <div className="grid grid-cols-2 gap-1.5 rounded-2xl border border-line/60 bg-[#F3F0E9] p-1 text-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  triggerFeedback();
-                  setTotalHoles(9);
-                }}
-                className={`rounded-xl py-2.5 font-bold transition ${
-                  totalHoles === 9
-                    ? 'bg-forest text-white shadow-sm'
-                    : 'text-[#6B6B70] hover:bg-white/60'
-                }`}
-              >
-                9 Holes
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerFeedback();
-                  setTotalHoles(18);
-                }}
-                className={`rounded-xl py-2.5 font-bold transition ${
-                  totalHoles === 18
-                    ? 'bg-forest text-white shadow-sm'
-                    : 'text-[#6B6B70] hover:bg-white/60'
-                }`}
-              >
-                18 Holes
-              </button>
+            <div className="grid grid-cols-2 gap-2">
+              {([9, 18] as const).map((holes) => (
+                <button
+                  key={holes}
+                  type="button"
+                  onClick={() => {
+                    triggerFeedback();
+                    setTotalHoles(holes);
+                  }}
+                  className={`rounded-xl py-2.5 text-xs font-medium transition ${
+                    totalHoles === holes
+                      ? 'bg-[#111111] text-white'
+                      : 'bg-neutral-100 text-neutral-500 active:bg-neutral-200'
+                  }`}
+                >
+                  {holes} Holes
+                </button>
+              ))}
             </div>
           </div>
 
           <div>
-            <label className="mb-2 block pl-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-              Starting Tee
+            <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Starting tee
             </label>
-            <div className="grid grid-cols-2 gap-1.5 rounded-2xl border border-line/60 bg-[#F3F0E9] p-1 text-xs">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => {
                   triggerFeedback();
                   setStartingLoop('Front');
                 }}
-                className={`rounded-xl py-2.5 font-bold transition ${
+                className={`rounded-xl py-2.5 text-xs font-medium transition ${
                   startingLoop === 'Front'
-                    ? 'bg-forest text-white shadow-sm'
-                    : 'text-[#6B6B70] hover:bg-white/60'
+                    ? 'bg-[#111111] text-white'
+                    : 'bg-neutral-100 text-neutral-500 active:bg-neutral-200'
                 }`}
               >
                 Front 9 (H1)
@@ -281,29 +264,29 @@ export default function GameSetup() {
                   triggerFeedback();
                   setStartingLoop('Back');
                 }}
-                className={`rounded-xl py-2.5 font-bold transition ${
+                className={`rounded-xl py-2.5 text-xs font-medium transition ${
                   startingLoop === 'Back'
-                    ? 'bg-forest text-white shadow-sm'
-                    : 'text-[#6B6B70] hover:bg-white/60'
+                    ? 'bg-[#111111] text-white'
+                    : 'bg-neutral-100 text-neutral-500 active:bg-neutral-200'
                 }`}
               >
                 Back 9 (H10)
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Dropdown Selection Blocks */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="block pl-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-              Course Template
+        {/* Selects */}
+        <section className="space-y-5">
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Course template
             </label>
-            <div className="relative flex items-center rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(28,28,30,0.03)] transition focus-within:border-forest/40">
+            <div className="relative flex items-center border-b border-neutral-200">
               <select
                 value={selectedCourseIdx}
                 onChange={(e) => setSelectedCourseIdx(Number(e.target.value))}
-                className="z-10 w-full cursor-pointer appearance-none truncate rounded-2xl bg-transparent py-3.5 pl-4 pr-24 text-sm font-semibold text-foreground focus:outline-none"
+                className="z-10 w-full cursor-pointer appearance-none truncate bg-transparent py-3 pr-20 text-sm font-medium text-[#111111] focus:outline-none"
               >
                 {savedCourses.length === 0 ? (
                   <option value={0}>
@@ -317,28 +300,28 @@ export default function GameSetup() {
                   ))
                 )}
               </select>
-              <div className="absolute right-3 z-20 flex items-center gap-1.5">
+              <div className="absolute right-0 z-20 flex items-center gap-1">
                 <button
                   type="button"
                   onClick={openCourseModal}
-                  className="rounded-lg p-1.5 text-forest transition hover:bg-[#EAF3EC] active:scale-95"
+                  className="rounded-full p-1.5 text-neutral-400 transition active:scale-95 active:bg-neutral-100"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
-                <ChevronDown className="pointer-events-none h-4 w-4 text-[#A3A3A8]" />
+                <ChevronDown className="pointer-events-none h-4 w-4 text-neutral-400" />
               </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="block pl-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-              Turn Group Flight
+          <div>
+            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Turn group flight
             </label>
-            <div className="relative flex items-center rounded-2xl border border-line bg-surface shadow-[0_1px_2px_rgba(28,28,30,0.03)] transition focus-within:border-forest/40">
+            <div className="relative flex items-center border-b border-neutral-200">
               <select
                 value={selectedGroupIdx}
                 onChange={(e) => setSelectedGroupIdx(Number(e.target.value))}
-                className="z-10 w-full cursor-pointer appearance-none truncate rounded-2xl bg-transparent py-3.5 pl-4 pr-12 text-sm font-semibold text-foreground focus:outline-none"
+                className="z-10 w-full cursor-pointer appearance-none truncate bg-transparent py-3 pr-10 text-sm font-medium text-[#111111] focus:outline-none"
               >
                 {savedGroups.length === 0 ? (
                   <option value={0}>No groups available</option>
@@ -350,53 +333,50 @@ export default function GameSetup() {
                   ))
                 )}
               </select>
-              <div className="pointer-events-none absolute right-3.5 z-20">
-                <ChevronDown className="h-4 w-4 text-[#A3A3A8]" />
+              <div className="pointer-events-none absolute right-0 z-20">
+                <ChevronDown className="h-4 w-4 text-neutral-400" />
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
       {/* Start Button */}
       <button
         onClick={handleStart}
-        className="flex w-full shrink-0 items-center justify-center gap-2 rounded-3xl bg-forest py-4 text-sm font-bold tracking-tight text-white shadow-[0_18px_30px_-18px_rgba(11,107,58,0.9)] transition active:scale-[0.99] active:bg-forest-dark"
+        className="w-full shrink-0 rounded-2xl bg-[#111111] py-4 text-sm font-medium text-white transition active:scale-[0.99] active:bg-black"
       >
-        <Flag className="h-4 w-4" />
-        Start Round
+        Start round
       </button>
 
       {/* Course Entry Modal */}
       {isModalOpen && (
-        <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="animate-scale-up relative max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-3xl border border-line bg-surface p-6 shadow-2xl">
-            {/* 1. Top Right Discard Close Button Icon */}
+        <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
+          <div className="animate-scale-up relative max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-3xl bg-white p-6 shadow-xl">
             <button
               type="button"
               onClick={closeCourseModal}
-              className="absolute right-4 top-4 rounded-xl p-1.5 text-[#6B6B70] transition hover:bg-[#F3F0E9]"
+              className="absolute right-4 top-4 rounded-full p-1.5 text-neutral-400 transition active:bg-neutral-100"
             >
-              <X className="h-5 w-5 stroke-[2.5]" />
+              <X className="h-5 w-5" />
             </button>
 
-            {/* 2. Modal Header */}
-            <div className="mb-4 pr-8">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-forest">Courses</p>
-              <h3 className="mt-0.5 text-lg font-extrabold text-foreground">New Course Layout</h3>
+            <div className="mb-5 pr-8">
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400">
+                Courses
+              </p>
+              <h3 className="mt-1 text-base font-semibold tracking-tight">New course layout</h3>
             </div>
 
             <div className="space-y-4">
-              {/* 3. Lighter weight, high-contrast text input */}
               <input
                 type="text"
                 placeholder="Club / Course Name"
                 value={newCourseName}
                 onChange={(e) => setNewCourseName(e.target.value)}
-                className="min-h-[56px] w-full rounded-2xl border border-line bg-[#F7F4EE] p-3.5 text-sm font-semibold text-foreground placeholder-[#A3A3A8] focus:border-forest/40 focus:outline-none"
+                className="w-full rounded-xl bg-neutral-100 px-4 py-3.5 text-sm font-medium text-[#111111] placeholder-neutral-400 focus:outline-none"
               />
 
-              {/* 4. Premium Obsidian & Amber Gold Monitor */}
               {(() => {
                 const parsList = newCoursePars.trim() ? newCoursePars.trim().split(' ') : [];
                 const holeCount = parsList.length;
@@ -406,10 +386,8 @@ export default function GameSetup() {
 
                 return (
                   <div
-                    className={`flex min-h-[62px] flex-col items-center justify-center rounded-2xl border p-4 font-mono text-xl font-black tracking-widest shadow-inner transition-colors ${
-                      isExceeded
-                        ? 'border-red-600 bg-red-950 text-red-400'
-                        : 'border-black bg-[#0F172A] text-[#F5C56B]'
+                    className={`flex min-h-[62px] flex-col items-center justify-center rounded-xl p-4 font-mono text-lg font-medium tracking-widest transition-colors ${
+                      isExceeded ? 'bg-red-50 text-red-600' : 'bg-neutral-100 text-[#111111]'
                     }`}
                   >
                     {holeCount > 0 ? (
@@ -419,23 +397,22 @@ export default function GameSetup() {
                           {row2 && <div>{row2}</div>}
                         </div>
                         <span
-                          className={`mt-2 font-sans text-[10px] font-bold tracking-normal ${
-                            isExceeded ? 'text-red-400' : 'text-slate-400'
+                          className={`mt-2 font-sans text-[10px] font-normal tracking-normal ${
+                            isExceeded ? 'text-red-600' : 'text-neutral-400'
                           }`}
                         >
                           {holeCount}/18 holes {isExceeded && '(Max 18 exceeded)'}
                         </span>
                       </>
                     ) : (
-                      <span className="animate-pulse font-sans text-xs font-medium tracking-normal text-white/70">
-                        Tap a par below to build the course...
+                      <span className="font-sans text-xs font-normal tracking-normal text-neutral-400">
+                        Tap a par below to build the course
                       </span>
                     )}
                   </div>
                 );
               })()}
 
-              {/* 5. Fluid Tactile Grid Action Matrix */}
               <div className="grid w-full grid-cols-5 gap-2">
                 {[3, 4, 5].map((num) => (
                   <button
@@ -445,25 +422,23 @@ export default function GameSetup() {
                       triggerFeedback();
                       setNewCoursePars((prev) => prev + num + ' ');
                     }}
-                    className="flex items-center justify-center rounded-xl border border-line bg-[#F3F0E9] py-3.5 text-lg font-black text-foreground transition active:scale-95 active:bg-forest active:text-white"
+                    className="flex items-center justify-center rounded-xl bg-neutral-100 py-3.5 text-lg font-medium text-[#111111] transition active:scale-95 active:bg-neutral-200"
                   >
                     {num}
                   </button>
                 ))}
 
-                {/* Icon Button: Delete (Amber Highlight) */}
                 <button
                   type="button"
                   onClick={() => {
                     triggerFeedback();
                     setNewCoursePars((prev) => prev.slice(0, -2));
                   }}
-                  className="flex items-center justify-center rounded-xl border border-[#FDE68A] bg-[#FEF3C7] text-[#D97706] transition active:scale-95 active:bg-[#FDE68A]"
+                  className="flex items-center justify-center rounded-xl bg-neutral-100 text-neutral-500 transition active:scale-95 active:bg-neutral-200"
                 >
-                  <Delete className="h-5 w-5 stroke-[2.5]" />
+                  <Delete className="h-5 w-5" />
                 </button>
 
-                {/* Icon Button: Save (Sport Emerald Green) */}
                 <button
                   type="button"
                   onClick={() => {
@@ -481,9 +456,9 @@ export default function GameSetup() {
                     setNewCourseName('');
                     setNewCoursePars('');
                   }}
-                  className="flex items-center justify-center rounded-xl bg-forest text-white shadow-sm shadow-[#059669]/20 transition active:scale-95 active:bg-forest-dark"
+                  className="flex items-center justify-center rounded-xl bg-[#111111] text-white transition active:scale-95 active:bg-black"
                 >
-                  <Plus className="h-5 w-5 stroke-[3]" />
+                  <Plus className="h-5 w-5" />
                 </button>
               </div>
             </div>
