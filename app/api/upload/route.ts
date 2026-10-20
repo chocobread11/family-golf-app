@@ -38,11 +38,11 @@ export async function POST(request: Request) {
     const publicUrl = `${baseDomain}/${fileKey}`;
 
     return NextResponse.json({ uploadUrl, publicUrl }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('❌ R2 signing link generation failure:', error);
     return NextResponse.json({ 
       error: 'Failed to sign storage endpoint',
-      details: error?.message || String(error)
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
   }
 }
