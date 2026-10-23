@@ -12,7 +12,17 @@ import {
   Delete,
   ChevronDown,
   RotateCw,
+  Flag,
+  Users,
+  Check,
 } from 'lucide-react';
+
+const avatarTones = [
+  'bg-forest text-white',
+  'bg-mint text-[#08301f]',
+  'bg-amber-100 text-amber-700',
+  'bg-sky-100 text-sky-700',
+];
 
 export default function GameSetup() {
   const router = useRouter();
@@ -123,246 +133,329 @@ export default function GameSetup() {
     setNewCoursePars('');
   };
 
+  const selectedCourse = savedCourses[selectedCourseIdx];
+  const courseParTotal = selectedCourse?.pars.reduce((a, b) => a + b, 0) || 0;
+  const selectedGroup = savedGroups[selectedGroupIdx];
+
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-xl flex-col bg-white px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-[calc(1rem+env(safe-area-inset-top))] font-sans text-[#111111] subpixel-antialiased select-none md:max-w-3xl md:px-8">
-      {/* Header */}
-      <header className="flex items-center gap-3 pb-2 pt-4">
-        <button
-          onClick={() => {
-            triggerFeedback();
-            router.push('/');
-          }}
-          className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition active:scale-95 active:bg-neutral-100"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400">
-            New round
-          </p>
-          <h1 className="mt-1 text-lg font-semibold leading-none tracking-tight">Setup match</h1>
-        </div>
-      </header>
+    <div className="min-h-[100dvh] w-full bg-canvas pb-[calc(7.5rem+env(safe-area-inset-bottom))] pt-[calc(1.15rem+env(safe-area-inset-top))] font-sans text-ink antialiased select-none">
+      <div className="mx-auto w-full max-w-md px-4">
+        {/* Header */}
+        <header className="flex items-center gap-3 pt-2">
+          <button
+            onClick={() => {
+              triggerFeedback();
+              router.push('/');
+            }}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-ink shadow-card transition active:scale-95"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="min-w-0">
+            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-subtle">
+              New round
+            </p>
+            <h1 className="mt-1 text-xl font-semibold leading-none tracking-tight">Setup match</h1>
+          </div>
+        </header>
 
-      <div className="flex min-h-0 flex-1 flex-col space-y-7 py-7">
-        {/* Media */}
-        <div className="w-full">
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-          />
+        <div className="mt-5 space-y-4">
+          {/* Photo */}
+          <div className="rounded-[28px] bg-white p-2 shadow-card">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+            />
 
-          {!imageUrl ? (
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="flex aspect-[16/10] max-h-[300px] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-neutral-300 bg-white transition hover:border-neutral-400 disabled:opacity-50"
-            >
-              {isUploading ? (
-                <RotateCw className="h-5 w-5 animate-spin text-neutral-400" />
-              ) : (
-                <Camera className="h-5 w-5 text-neutral-400" />
-              )}
-              <span className="text-sm font-medium text-neutral-600">
-                {isUploading ? 'Uploading photo...' : 'Add a round photo'}
-              </span>
-              <span className="text-[10px] font-normal uppercase tracking-[0.14em] text-neutral-400">
-                Optional · Tap to select
-              </span>
-            </button>
-          ) : (
-            <div className="relative aspect-[16/10] max-h-[300px] w-full overflow-hidden rounded-2xl bg-neutral-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imageUrl}
-                alt="Active Snapshot Selection Layout Preview"
-                className="h-full w-full object-cover"
-              />
-
-              <div className="absolute right-3 top-3 z-10 flex gap-2">
-                <button
-                  onClick={() => {
-                    triggerFeedback();
-                    fileInputRef.current?.click();
-                  }}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition active:bg-black/60"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => {
-                    triggerFeedback();
-                    setImageUrl(null);
-                  }}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm transition active:bg-black/60"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="absolute bottom-3 left-3 z-10">
-                <span className="rounded-full bg-black/40 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.14em] text-white backdrop-blur-sm">
-                  Round photo
+            {!imageUrl ? (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="relative flex aspect-[16/9] w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[22px] bg-[linear-gradient(135deg,#EAF7EF_0%,#F7F6F1_100%)] transition disabled:opacity-50"
+              >
+                <span className="grid h-12 w-12 place-items-center rounded-full bg-white text-forest shadow-card">
+                  {isUploading ? (
+                    <RotateCw className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Camera className="h-5 w-5" />
+                  )}
                 </span>
+                <span className="text-[13px] font-semibold text-ink">
+                  {isUploading ? 'Uploading photo...' : 'Add a round photo'}
+                </span>
+                <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-subtle">
+                  Optional · Tap to select
+                </span>
+              </button>
+            ) : (
+              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[22px] bg-canvas">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt="Round photo preview"
+                  className="h-full w-full object-cover"
+                />
+
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/50 to-transparent" />
+
+                <div className="absolute right-3 top-3 z-10 flex gap-2">
+                  <button
+                    onClick={() => {
+                      triggerFeedback();
+                      fileInputRef.current?.click();
+                    }}
+                    className="glass grid h-9 w-9 place-items-center rounded-full text-white transition active:scale-95"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      triggerFeedback();
+                      setImageUrl(null);
+                    }}
+                    className="glass grid h-9 w-9 place-items-center rounded-full text-white transition active:scale-95"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="absolute bottom-3 left-3 z-10">
+                  <span className="glass rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-white">
+                    Round photo
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Round details */}
+          <section className="rounded-[28px] bg-white p-5 shadow-card">
+            <div className="flex items-center gap-2.5">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-canvas text-forest">
+                <Flag className="h-4 w-4" />
+              </span>
+              <h2 className="text-sm font-semibold tracking-tight">Round details</h2>
+            </div>
+
+            <div className="mt-4">
+              <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle">
+                Format
+              </label>
+              <div className="grid grid-cols-2 gap-1 rounded-2xl bg-canvas p-1">
+                {([9, 18] as const).map((holes) => (
+                  <button
+                    key={holes}
+                    type="button"
+                    onClick={() => {
+                      triggerFeedback();
+                      setTotalHoles(holes);
+                    }}
+                    className={`rounded-xl py-2.5 text-xs font-semibold transition ${
+                      totalHoles === holes
+                        ? 'bg-white text-ink shadow-card'
+                        : 'text-subtle active:bg-white/60'
+                    }`}
+                  >
+                    {holes} Holes
+                  </button>
+                ))}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Config */}
-        <section className="space-y-5">
-          <div>
-            <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
-              Round length
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {([9, 18] as const).map((holes) => (
+            <div className="mt-4">
+              <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle">
+                Starting tee
+              </label>
+              <div className="grid grid-cols-2 gap-1 rounded-2xl bg-canvas p-1">
                 <button
-                  key={holes}
                   type="button"
                   onClick={() => {
                     triggerFeedback();
-                    setTotalHoles(holes);
+                    setStartingLoop('Front');
                   }}
-                  className={`rounded-xl py-2.5 text-xs font-medium transition ${
-                    totalHoles === holes
-                      ? 'bg-[#111111] text-white'
-                      : 'bg-neutral-100 text-neutral-500 active:bg-neutral-200'
+                  className={`rounded-xl py-2.5 text-xs font-semibold transition ${
+                    startingLoop === 'Front'
+                      ? 'bg-white text-ink shadow-card'
+                      : 'text-subtle active:bg-white/60'
                   }`}
                 >
-                  {holes} Holes
+                  Front 9 (H1)
                 </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
-              Starting tee
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  triggerFeedback();
-                  setStartingLoop('Front');
-                }}
-                className={`rounded-xl py-2.5 text-xs font-medium transition ${
-                  startingLoop === 'Front'
-                    ? 'bg-[#111111] text-white'
-                    : 'bg-neutral-100 text-neutral-500 active:bg-neutral-200'
-                }`}
-              >
-                Front 9 (H1)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerFeedback();
-                  setStartingLoop('Back');
-                }}
-                className={`rounded-xl py-2.5 text-xs font-medium transition ${
-                  startingLoop === 'Back'
-                    ? 'bg-[#111111] text-white'
-                    : 'bg-neutral-100 text-neutral-500 active:bg-neutral-200'
-                }`}
-              >
-                Back 9 (H10)
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Selects */}
-        <section className="space-y-5">
-          <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
-              Course template
-            </label>
-            <div className="relative flex items-center border-b border-neutral-200">
-              <select
-                value={selectedCourseIdx}
-                onChange={(e) => setSelectedCourseIdx(Number(e.target.value))}
-                className="z-10 w-full cursor-pointer appearance-none truncate bg-transparent py-3 pr-20 text-sm font-medium text-[#111111] focus:outline-none"
-              >
-                {savedCourses.length === 0 ? (
-                  <option value={0}>
-                    {isLoading ? 'Loading layouts...' : 'Default Layout (Par 36)'}
-                  </option>
-                ) : (
-                  savedCourses.map((c, idx) => (
-                    <option key={c.id} value={idx}>
-                      {c.name} ({c.pars.length}H)
-                    </option>
-                  ))
-                )}
-              </select>
-              <div className="absolute right-0 z-20 flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={openCourseModal}
-                  className="rounded-full p-1.5 text-neutral-400 transition active:scale-95 active:bg-neutral-100"
+                  onClick={() => {
+                    triggerFeedback();
+                    setStartingLoop('Back');
+                  }}
+                  className={`rounded-xl py-2.5 text-xs font-semibold transition ${
+                    startingLoop === 'Back'
+                      ? 'bg-white text-ink shadow-card'
+                      : 'text-subtle active:bg-white/60'
+                  }`}
                 >
-                  <Plus className="h-4 w-4" />
+                  Back 9 (H10)
                 </button>
-                <ChevronDown className="pointer-events-none h-4 w-4 text-neutral-400" />
               </div>
             </div>
-          </div>
+          </section>
 
-          <div>
-            <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
-              Turn group flight
-            </label>
-            <div className="relative flex items-center border-b border-neutral-200">
-              <select
-                value={selectedGroupIdx}
-                onChange={(e) => setSelectedGroupIdx(Number(e.target.value))}
-                className="z-10 w-full cursor-pointer appearance-none truncate bg-transparent py-3 pr-10 text-sm font-medium text-[#111111] focus:outline-none"
+          {/* Course */}
+          <section className="rounded-[28px] bg-white p-5 shadow-card">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-8 w-8 place-items-center rounded-xl bg-canvas text-forest">
+                  <Flag className="h-4 w-4" />
+                </span>
+                <h2 className="text-sm font-semibold tracking-tight">Course</h2>
+              </div>
+              <button
+                type="button"
+                onClick={openCourseModal}
+                className="grid h-8 w-8 place-items-center rounded-full bg-canvas text-subtle transition active:scale-95 active:bg-line"
               >
-                {savedGroups.length === 0 ? (
-                  <option value={0}>No groups available</option>
-                ) : (
-                  savedGroups.map((g, idx) => (
-                    <option key={g.id} value={idx}>
-                      {g.name} — ({g.players.join(', ')})
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="relative mt-4 flex items-center gap-3 rounded-2xl bg-canvas p-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-forest text-white">
+                <Flag className="h-5 w-5" />
+              </span>
+              <div className="relative min-w-0 flex-1">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-subtle">
+                  Course template
+                </p>
+                <select
+                  value={selectedCourseIdx}
+                  onChange={(e) => setSelectedCourseIdx(Number(e.target.value))}
+                  className="z-10 mt-0.5 w-full cursor-pointer appearance-none truncate bg-transparent pr-6 text-[13px] font-semibold text-ink focus:outline-none"
+                >
+                  {savedCourses.length === 0 ? (
+                    <option value={0}>
+                      {isLoading ? 'Loading layouts...' : 'Default Layout (Par 36)'}
                     </option>
-                  ))
-                )}
-              </select>
-              <div className="pointer-events-none absolute right-0 z-20">
-                <ChevronDown className="h-4 w-4 text-neutral-400" />
+                  ) : (
+                    savedCourses.map((c, idx) => (
+                      <option key={c.id} value={idx}>
+                        {c.name} ({c.pars.length}H)
+                      </option>
+                    ))
+                  )}
+                </select>
+                <p className="mt-0.5 text-[10px] text-subtle">
+                  {selectedCourse ? `${selectedCourse.pars.length} holes · Par ${courseParTotal}` : 'Tap to choose a layout'}
+                </p>
+                <ChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+
+          {/* Flight */}
+          <section className="rounded-[28px] bg-white p-5 shadow-card">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-8 w-8 place-items-center rounded-xl bg-canvas text-forest">
+                  <Users className="h-4 w-4" />
+                </span>
+                <h2 className="text-sm font-semibold tracking-tight">Flight group</h2>
+              </div>
+              <span className="rounded-full bg-canvas px-2.5 py-1 text-[10px] font-semibold text-subtle">
+                {selectedGroup?.players.length || 0} players
+              </span>
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {savedGroups.length === 0 ? (
+                <div className="rounded-2xl bg-canvas px-4 py-4 text-center text-xs font-medium text-subtle">
+                  {isLoading ? 'Loading groups...' : 'No groups available'}
+                </div>
+              ) : (
+                savedGroups.map((group, idx) => {
+                  const isSelected = selectedGroupIdx === idx;
+                  return (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => {
+                        triggerFeedback();
+                        setSelectedGroupIdx(idx);
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition active:scale-[0.99] ${
+                        isSelected
+                          ? 'border-forest/30 bg-forest/5'
+                          : 'border-line bg-white'
+                      }`}
+                    >
+                      <div className="flex shrink-0 -space-x-2">
+                        {group.players.slice(0, 3).map((player, pIdx) => (
+                          <span
+                            key={player}
+                            className={`grid h-8 w-8 place-items-center rounded-full border-2 border-white text-[9px] font-semibold ${avatarTones[pIdx % avatarTones.length]}`}
+                          >
+                            {player.slice(0, 2).toUpperCase()}
+                          </span>
+                        ))}
+                        {group.players.length > 3 && (
+                          <span className="grid h-8 w-8 place-items-center rounded-full border-2 border-white bg-canvas text-[9px] font-semibold text-subtle">
+                            +{group.players.length - 3}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[13px] font-semibold">{group.name}</p>
+                        <p className="mt-0.5 truncate text-[10px] text-subtle">
+                          {group.players.join(' · ')}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`grid h-6 w-6 shrink-0 place-items-center rounded-full transition ${
+                          isSelected ? 'bg-forest text-white' : 'bg-canvas text-transparent'
+                        }`}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </section>
+        </div>
       </div>
 
-      {/* Start Button */}
-      <button
-        onClick={handleStart}
-        className="w-full shrink-0 rounded-2xl bg-[#111111] py-4 text-sm font-medium text-white transition active:scale-[0.99] active:bg-black"
-      >
-        Start round
-      </button>
+      {/* Sticky start action */}
+      <div className="fixed inset-x-0 bottom-0 z-40">
+        <div className="mx-auto w-full max-w-md px-4 pb-[calc(0.85rem+env(safe-area-inset-bottom))]">
+          <div className="glass-light rounded-[26px] border border-white/60 p-2 shadow-float">
+            <button
+              onClick={handleStart}
+              className="w-full rounded-[20px] bg-gradient-to-r from-forest to-forest-deep py-4 text-sm font-semibold text-white shadow-lg shadow-forest/25 transition active:scale-[0.99]"
+            >
+              Start round
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Course Entry Modal */}
       {isModalOpen && (
-        <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
-          <div className="animate-scale-up relative max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-3xl bg-white p-6 shadow-xl">
+        <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4 backdrop-blur-md">
+          <div className="animate-scale-up relative max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-[30px] bg-white p-5 shadow-float">
             <button
               type="button"
               onClick={closeCourseModal}
-              className="absolute right-4 top-4 rounded-full p-1.5 text-neutral-400 transition active:bg-neutral-100"
+              className="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-canvas text-subtle transition active:scale-95"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
 
-            <div className="mb-5 pr-8">
-              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400">
+            <div className="mb-5 pr-10">
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-subtle">
                 Courses
               </p>
               <h3 className="mt-1 text-base font-semibold tracking-tight">New course layout</h3>
@@ -374,7 +467,7 @@ export default function GameSetup() {
                 placeholder="Club / Course Name"
                 value={newCourseName}
                 onChange={(e) => setNewCourseName(e.target.value)}
-                className="w-full rounded-xl bg-neutral-100 px-4 py-3.5 text-sm font-medium text-[#111111] placeholder-neutral-400 focus:outline-none"
+                className="w-full rounded-2xl bg-canvas px-4 py-3.5 text-sm font-medium text-ink placeholder:text-subtle/70 focus:outline-none"
               />
 
               {(() => {
@@ -386,8 +479,8 @@ export default function GameSetup() {
 
                 return (
                   <div
-                    className={`flex min-h-[62px] flex-col items-center justify-center rounded-xl p-4 font-mono text-lg font-medium tracking-widest transition-colors ${
-                      isExceeded ? 'bg-red-50 text-red-600' : 'bg-neutral-100 text-[#111111]'
+                    className={`flex min-h-[62px] flex-col items-center justify-center rounded-2xl p-4 font-mono text-lg font-medium tracking-widest transition-colors ${
+                      isExceeded ? 'bg-red-50 text-red-600' : 'bg-canvas text-ink'
                     }`}
                   >
                     {holeCount > 0 ? (
@@ -398,14 +491,14 @@ export default function GameSetup() {
                         </div>
                         <span
                           className={`mt-2 font-sans text-[10px] font-normal tracking-normal ${
-                            isExceeded ? 'text-red-600' : 'text-neutral-400'
+                            isExceeded ? 'text-red-600' : 'text-subtle'
                           }`}
                         >
                           {holeCount}/18 holes {isExceeded && '(Max 18 exceeded)'}
                         </span>
                       </>
                     ) : (
-                      <span className="font-sans text-xs font-normal tracking-normal text-neutral-400">
+                      <span className="font-sans text-xs font-normal tracking-normal text-subtle">
                         Tap a par below to build the course
                       </span>
                     )}
@@ -422,7 +515,7 @@ export default function GameSetup() {
                       triggerFeedback();
                       setNewCoursePars((prev) => prev + num + ' ');
                     }}
-                    className="flex items-center justify-center rounded-xl bg-neutral-100 py-3.5 text-lg font-medium text-[#111111] transition active:scale-95 active:bg-neutral-200"
+                    className="flex items-center justify-center rounded-2xl bg-canvas py-3.5 text-lg font-semibold text-ink transition active:scale-95 active:bg-line"
                   >
                     {num}
                   </button>
@@ -434,7 +527,7 @@ export default function GameSetup() {
                     triggerFeedback();
                     setNewCoursePars((prev) => prev.slice(0, -2));
                   }}
-                  className="flex items-center justify-center rounded-xl bg-neutral-100 text-neutral-500 transition active:scale-95 active:bg-neutral-200"
+                  className="flex items-center justify-center rounded-2xl bg-canvas text-subtle transition active:scale-95 active:bg-line"
                 >
                   <Delete className="h-5 w-5" />
                 </button>
@@ -456,7 +549,7 @@ export default function GameSetup() {
                     setNewCourseName('');
                     setNewCoursePars('');
                   }}
-                  className="flex items-center justify-center rounded-xl bg-[#111111] text-white transition active:scale-95 active:bg-black"
+                  className="flex items-center justify-center rounded-2xl bg-forest text-white transition active:scale-95"
                 >
                   <Plus className="h-5 w-5" />
                 </button>
