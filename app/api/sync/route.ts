@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/src/lib/db';
+import { databaseError } from '@/src/lib/database-error';
 import { cleanupPhoto, MAX_PHOTO_BYTES, PHOTO_TYPES, PhotoStorageError, uploadRoundPhoto } from '@/src/lib/r2';
 
 export const dynamic = 'force-dynamic';
@@ -66,7 +67,7 @@ function failure(error: unknown) {
     if (error.code === 'P2003') return NextResponse.json({ error: 'This course is used by saved matches. Keep it, or remove those matches first.' }, { status: 409 });
   }
   console.error('Database request failed:', error);
-  return NextResponse.json({ error: 'Could not reach the database. Your changes have not been saved. Try again.' }, { status: 503 });
+  return NextResponse.json(databaseError(error, !!process.env.DATABASE_URL?.trim()), { status: 503 });
 }
 
 export async function GET(request: Request) {

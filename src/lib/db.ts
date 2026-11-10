@@ -8,6 +8,6 @@ const url = process.env.DATABASE_URL;
 
 export const prisma = globalForPrisma.golfDatabase?.url === url && globalForPrisma.golfDatabase
   ? globalForPrisma.golfDatabase.client
-  : new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
+  : new PrismaClient({ adapter: new PrismaPg({ connectionString: url, connectionTimeoutMillis: 10_000 }) });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.golfDatabase = { url, client: prisma };

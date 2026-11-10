@@ -73,3 +73,13 @@ bun start
 ```
 
 Seed operations add missing courses and groups without overwriting edited templates or deleting history. Existing deployments need the updated Prisma schema applied before serving this version.
+
+### Database connection errors in Coolify
+
+Set `DATABASE_URL` in the application's **runtime** environment to the database's Internal URL when both resources share a destination network. The hostname must resolve from the app container; `localhost` refers to the app container itself. Recreate or redeploy the app after changing its environment.
+
+For the bundled Compose stack, the default connection uses the `db` service on port 5432. Set `POSTGRES_PASSWORD` to the existing database password, or override `DATABASE_URL` with the complete connection string. For passwords with special characters, use a correctly URL-encoded connection string. Changing the PostgreSQL container's environment does not rotate a password already stored in its existing data volume.
+
+The API distinguishes rejected credentials (`DATABASE_AUTH_FAILED`), an unreachable host (`DATABASE_UNREACHABLE`), and missing schema updates (`DATABASE_SCHEMA_OUTDATED`). For the last case, run `bun run db:deploy` in the app container, then restart it. The current Docker entrypoint already runs this command; preserve that entrypoint when configuring Coolify's startup command.
+
+If troubleshooting is still needed, check the application logs around `Database request failed`. Share the error code and a connection string with its password removed; do not share actual credentials.
