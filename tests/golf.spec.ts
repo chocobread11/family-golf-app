@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { selectOption } from './helpers/select-option';
 
 const prefix = `Test ${Date.now()}`;
 const cleanup: { entity: string; id: string }[] = [];
@@ -69,7 +70,7 @@ test('database CRUD validates input, preserves course snapshots, and protects li
 test('history supports course and group editing, deletion confirmation, and mobile sizing', async ({ page, request }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Saved Matches' })).toBeVisible();
-  await page.getByRole('button', { name: 'courses', exact: true }).click();
+  await page.getByRole('radio', { name: 'courses', exact: true }).click();
   await page.getByRole('button', { name: 'Add course', exact: true }).click();
   let dialog = page.getByRole('dialog');
   await dialog.getByLabel('Course name').fill(`${prefix} UI course`);
@@ -94,7 +95,7 @@ test('history supports course and group editing, deletion confirmation, and mobi
   await deleteCourse.click();
   await page.getByRole('alertdialog').getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(deleteCourse).not.toBeVisible();
-  await page.getByRole('button', { name: 'groups', exact: true }).click();
+  await page.getByRole('radio', { name: 'groups', exact: true }).click();
   await page.getByRole('button', { name: 'Add group', exact: true }).click();
   dialog = page.getByRole('dialog');
   await dialog.getByLabel('Group name').fill(`${prefix} UI group`);
@@ -126,7 +127,7 @@ test('a round survives a failed save, can be edited, reloads from the database, 
   await expect(page.getByRole('button', { name: 'Start Round', exact: true })).toBeDisabled();
   const templates = await (await request.get('/api/sync')).json();
   const flight = templates.groups.find((group: { name: string }) => group.name === 'Full Flight');
-  await page.getByLabel('Player Group', { exact: true }).selectOption(flight.id);
+  await selectOption(page, 'Player Group', flight.name);
   await page.getByRole('button', { name: 'Start Round', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Hole 1', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '4', exact: true }).click();

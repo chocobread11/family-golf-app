@@ -1,9 +1,12 @@
 "use client";
+import { Button } from "@/src/components/ui/button";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGolfStore } from '@/src/store/useGolfStore';
 import { ChevronLeft, ChevronRight, Delete, Space } from 'lucide-react';
 import { saveRecord, toGameState, type GameRecord } from '@/src/lib/golf-api';
+import { Badge } from "@/src/components/ui/badge";
+import { Progress } from "@/src/components/ui/progress";
 import { cn } from '@/src/lib/utils';
 
 export default function PlayMatch() {
@@ -49,9 +52,9 @@ export default function PlayMatch() {
 
   if (!activeGame) {
     return (
-      <main className="w-full max-w-xl md:max-w-3xl mx-auto h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center antialiased">
+      <main className="w-full max-w-3xl mx-auto h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center antialiased">
         <p className="text-sm font-bold text-[#62626A]">No active round found.</p>
-        <button
+        <Button variant="ghost"
           onClick={() => {
             triggerFeedback('tap');
             router.push('/setup');
@@ -59,7 +62,7 @@ export default function PlayMatch() {
           className="mt-4 px-5 py-3 bg-[#1C1C1E] text-white rounded-2xl font-bold text-xs shadow-sm transition active:scale-[0.98]"
         >
           Setup Match
-        </button>
+        </Button>
       </main>
     );
   }
@@ -134,46 +137,44 @@ export default function PlayMatch() {
   };
 
   return (
-    <main className="w-full max-w-xl md:max-w-3xl mx-auto h-dvh bg-white text-black font-sans px-4 md:px-6 pt-4 md:pt-6 subpixel-antialiased flex flex-col justify-between overflow-x-hidden overflow-y-auto select-none pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+    <main className="w-full max-w-3xl mx-auto h-dvh bg-white text-black font-sans px-2 sm:px-4 md:px-6 pt-4 md:pt-6 subpixel-antialiased flex flex-col justify-between overflow-x-hidden overflow-y-auto select-none pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
 
       {/* iOS Top Bar Navigation */}
       <div className="flex items-center justify-between pb-3 pt-1 flex-shrink-0">
-        <button
+        <Button variant="ghost"
           aria-label="Previous hole"
           onClick={prevStep}
           disabled={stepIdx === 0 || isSaving}
           className="p-3 bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#1C1C1E] active:bg-[#F1F5F9] rounded-2xl disabled:opacity-20 transition shadow-xs"
         >
           <ChevronLeft className="w-5 h-5"/>
-        </button>
+        </Button>
         <div className="text-center space-y-0.5">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1C1C1E] tracking-tight">Hole {activeHole}</h1>
           <div className="flex items-center justify-center gap-2">
-            <span className="text-sm font-bold uppercase tracking-widest text-[#9A3412] bg-[#FFF3E0] px-3 py-1 rounded-full">Par {parVal}</span>
+            <Badge variant="secondary" className="h-auto bg-[#FFF3E0] px-3 py-1 text-sm text-[#9A3412]">Par {parVal}</Badge>
             <span role="status" className="text-xs text-[#62626A] tabular-nums">{stepIdx + 1} of {totalSteps}</span>
           </div>
-          <div role="progressbar" aria-label="Round progress" aria-valuemin={1} aria-valuemax={totalSteps} aria-valuenow={stepIdx + 1} aria-valuetext={`${stepIdx + 1} of ${totalSteps} holes. Playing hole ${activeHole}.`} className="mx-auto flex w-36 gap-0.5 py-1">
-            {playedHoles.map((hole, index) => <span key={hole} className={cn('h-1.5 min-w-0 flex-1 rounded-full', index <= stepIdx ? 'bg-[#047857]' : 'bg-[#E5E5EA]')} />)}
-          </div>
-          <button disabled={isSaving} onClick={() => { if (handleSaveHoleState()) router.push('/'); }} className="block mx-auto min-h-11 px-3 py-2 text-sm font-semibold text-[#62626A]">Save & exit</button>
+          <Progress value={stepIdx + 1} max={totalSteps} aria-label="Round progress" aria-valuetext={`${stepIdx + 1} of ${totalSteps} holes. Playing hole ${activeHole}.`} className="mx-auto my-1 h-1.5 w-36 rounded-full" />
+          <Button variant="ghost" disabled={isSaving} onClick={() => { if (handleSaveHoleState()) router.push('/'); }} className="block mx-auto min-h-11 px-3 py-2 text-sm font-semibold text-[#62626A]">Save & exit</Button>
         </div>
         {stepIdx === totalSteps - 1 ? (
-          <button
+          <Button
             onClick={handleFinishRound}
             disabled={isSaving}
             className="bg-[#047857] text-white font-bold text-xs uppercase h-12 tracking-wider px-4 py-3 rounded-2xl transition shadow-sm"
           >
             {isSaving ? 'Saving…' : 'Finish'}
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button variant="ghost"
             aria-label="Next hole"
             disabled={isSaving}
             onClick={nextStep}
             className="p-3 bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#1C1C1E] active:bg-[#F1F5F9] rounded-2xl transition shadow-xs"
           >
             <ChevronRight className="w-5 h-5"/>
-          </button>
+          </Button>
         )}
       </div>
 
@@ -190,7 +191,7 @@ export default function PlayMatch() {
         </div>
 
         {/* Row 2: Dynamic Stable Roster List Container */}
-        <div className="w-full px-6 divide-y divide-[#F1F5F9]/50 overflow-y-auto min-h-0">
+        <div className="w-full px-0 sm:px-2 divide-y divide-[#F1F5F9]/50 overflow-y-auto min-h-0">
             {activeGame.players.map((p, idx) => (
             <div key={p} className="flex justify-between py-2 items-center border-transparent">
                 <span className="text-xl font-bold text-[#1C1C1E] tracking-tight">{p}</span>
@@ -204,43 +205,43 @@ export default function PlayMatch() {
       </div>
 
       {/* --- 100% RESPONSIVE ADAPTIVE DOCK KEYPAD PANEL --- */}
-      <div className="w-full max-w-md mx-auto bg-white p-4 rounded-3xl shrink-0 mb-1">
+      <div className="w-full max-w-md mx-auto bg-white px-0 py-2 sm:p-4 [@media(max-height:700px)]:py-1 rounded-3xl shrink-0 mb-1">
         {saveError && <p role="alert" className="mb-3 text-sm text-red-700">{saveError}</p>}
         <p className="mb-3 text-center text-xs text-[#62626A]">Use Space between each player’s score.</p>
-        <div className="grid grid-cols-3 gap-x-4 gap-y-3 w-full">
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3 w-full [@media(max-height:700px)]:gap-y-2">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-            <button
+            <Button variant="ghost"
               key={n}
               disabled={isSaving}
               onClick={() => handleKeyPress(String(n))}
-              className="w-full min-h-11 aspect-[4/2.4] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30"
+              className="w-full min-h-11 h-auto aspect-[4/2.4] [@media(max-height:700px)]:h-11 [@media(max-height:700px)]:aspect-auto bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30"
             >
               {n}
-            </button>
+            </Button>
           ))}
-          <button
+          <Button variant="ghost"
             aria-label="Next player's score (space)"
             disabled={isSaving}
             onClick={() => handleKeyPress('SPACE')}
-            className="w-full min-h-11 aspect-[4/2.4] bg-[#E8F5E9] active:bg-[#C8E6C9] text-[#2E7D32] rounded-2xl flex items-center justify-center shadow-xs transition"
+            className="w-full min-h-11 h-auto aspect-[4/2.4] [@media(max-height:700px)]:h-11 [@media(max-height:700px)]:aspect-auto bg-[#E8F5E9] active:bg-[#C8E6C9] text-[#2E7D32] rounded-2xl flex items-center justify-center shadow-xs transition"
           >
             <Space className="w-5 h-5 stroke-[2.5]" />
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost"
             disabled={isSaving}
             onClick={() => handleKeyPress('0')}
-            className="w-full min-h-11 aspect-[4/2.4] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30 shadow-xs"
+            className="w-full min-h-11 h-auto aspect-[4/2.4] [@media(max-height:700px)]:h-11 [@media(max-height:700px)]:aspect-auto bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30 shadow-xs"
           >
             0
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost"
             aria-label="Delete last digit"
             disabled={isSaving}
             onClick={() => handleKeyPress('BACK')}
-            className="w-full min-h-11 aspect-[4/2.4] bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] rounded-2xl flex items-center justify-center shadow-xs transition"
+            className="w-full min-h-11 h-auto aspect-[4/2.4] [@media(max-height:700px)]:h-11 [@media(max-height:700px)]:aspect-auto bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] rounded-2xl flex items-center justify-center shadow-xs transition"
           >
             <Delete className="w-5 h-5 stroke-[2.5]" />
-          </button>
+          </Button>
         </div>
       </div>
 

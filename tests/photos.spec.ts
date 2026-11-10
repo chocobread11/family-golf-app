@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { selectOption } from './helpers/select-option';
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a5V0AAAAASUVORK5CYII=', 'base64');
 const photo = { name: 'test-round.png', mimeType: 'image/png', buffer: png };
@@ -8,16 +9,16 @@ test('play, setup, score, and history share the main page width', async ({ page,
   const data = await (await request.get('/api/sync')).json();
   const game = data.games[0];
   expect(game).toBeTruthy();
-  for (const width of [390, 640, 768, 1280]) {
+  for (const width of [320, 390, 640, 768, 1280]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto('/');
     const mainWidth = await page.getByRole('main').evaluate(node => node.getBoundingClientRect().width);
     const history = page.getByRole('region', { name: 'History and saved templates' });
     await expect(history).toBeVisible();
-    expect(await history.evaluate(node => node.getBoundingClientRect().width)).toBe(mainWidth - (width >= 768 ? 48 : 32));
+    expect(await history.evaluate(node => node.getBoundingClientRect().width)).toBe(mainWidth - (width >= 768 ? 48 : width >= 640 ? 32 : 16));
     for (const url of ['/setup', '/play', `/score/${game.id}`]) {
       if (url === '/play') {
-        await page.getByLabel('Player Group', { exact: true }).selectOption({ index: 1 });
+        await selectOption(page, 'Player Group', 1);
         await page.getByRole('button', { name: 'Start Round', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Hole 1', exact: true })).toBeVisible();
       } else { await page.goto(url); }

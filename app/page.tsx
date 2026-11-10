@@ -1,4 +1,6 @@
 "use client";
+import { Card } from "@/src/components/ui/card";
+import { Button } from "@/src/components/ui/button";
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -40,7 +42,7 @@ export default function Dashboard() {
   const stringFullDate = today.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <main className="w-full max-w-xl md:max-w-3xl mx-auto min-h-[100dvh] bg-white text-black font-sans antialiased px-4 md:px-6 py-0 md:py-6 flex flex-col justify-start pb-8">
+    <main className="w-full max-w-3xl mx-auto min-h-[100dvh] bg-white text-black font-sans antialiased px-2 sm:px-4 md:px-6 py-0 md:py-6 flex flex-col justify-start pb-8">
 
       <div className="flex items-center justify-between px-1.5 py-4 mb-4 gap-4 shadow-[0_8px_25px_rgba(0,0,0,0.01)]">
         <div className="space-y-0.5">
@@ -64,7 +66,7 @@ export default function Dashboard() {
 
       <div className="space-y-6">
         {/* --- SECTION 1: DYNAMIC HERO HEADER CARD --- */}
-        <div className="bg-[#F4F6F9] rounded-3xl p-5 border border-[#F1F5F9]/50 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex items-center justify-between gap-4">
+        <Card className="flex-row items-center justify-between gap-4 bg-muted p-4 ring-0">
 
           <div className="w-1/4 aspect-square rounded-2xl overflow-hidden flex-shrink-0 relative flex items-center justify-center ">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -89,29 +91,29 @@ export default function Dashboard() {
               <RotateCw className="w-3.5 h-3.5" />
             </div>
           )}
-        </div>
+        </Card>
 
         {/* --- ROUND LAUNCH PLATFORM ACTIONS TRIGGER --- */}
         <div>
           {activeGame ? (
-            <button
+            <Button
               onClick={() => { triggerFeedback(); router.push('/play'); }}
               className="w-full flex items-center justify-center gap-2 bg-[#047857] hover:bg-[#065F46] text-white font-bold py-4 px-6 rounded-3xl active:bg-[#065F46] shadow-sm transition text-sm tracking-tight"
             >
               <Play className="w-4 h-4 fill-current"/> Resume Active Match
-            </button>
+            </Button>
           ) : (
-            <Link
+            <Button asChild className="h-12 w-full"><Link
               href="/setup"
               onClick={triggerFeedback}
               className="w-full flex items-center justify-center bg-[#047857] hover:bg-[#065F46] active:bg-[#065F46] text-white font-bold py-4 px-6 rounded-3xl shadow-sm transition text-sm tracking-tight"
             >
               Start a match
-            </Link>
+            </Link></Button>
           )}
         </div>
 
-        {syncError && <p role="alert" className="px-1 text-sm text-red-700">{syncError} <button disabled={isSyncing} onClick={() => { setIsSyncing(true); void syncHistory(); }} className="min-h-11 px-2 font-semibold underline">Retry</button></p>}
+        {syncError && <p role="alert" className="px-1 text-sm text-red-700">{syncError} <Button variant="ghost" disabled={isSyncing} onClick={() => { setIsSyncing(true); void syncHistory(); }} className="min-h-11 px-2 font-semibold underline">Retry</Button></p>}
         <HistoryList isSyncing={isSyncing} />
       </div>
     </main>
