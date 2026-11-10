@@ -1,33 +1,38 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useGolfStore } from '@/src/store/useGolfStore';
-import { Table2, ArrowLeft, Crown, Flag } from 'lucide-react';
+import { Trophy, ArrowLeft, Table2, Pencil, Trash2 } from 'lucide-react';
+
+import { refreshRecords } from '@/src/lib/golf-api';
+import { EditMatch, DeleteRecord } from '@/src/components/record-dialogs';
 
 export default function ScorePage() {
   const { id } = useParams();
   const router = useRouter();
   const { history } = useGolfStore();
 
-  const game = history.find((g) => g.id === id);
-  if (!game)
-    return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-canvas p-6 font-sans text-ink antialiased">
-        <div className="w-full max-w-sm rounded-[30px] bg-white p-8 text-center shadow-float">
-          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-canvas text-subtle">
-            <Table2 className="h-6 w-6" />
-          </span>
-          <p className="mt-4 text-base font-semibold tracking-tight">Scorecard missing</p>
-          <p className="mt-1 text-sm text-subtle">This round could not be found in your history.</p>
-          <button
-            onClick={() => router.push('/')}
-            className="mt-5 w-full rounded-2xl bg-gradient-to-r from-forest to-forest-deep py-3.5 text-sm font-semibold text-white transition active:scale-[0.99]"
-          >
-            Return home
-          </button>
-        </div>
-      </div>
-    );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  async function loadHistory() {
+    try { await refreshRecords(); setError(''); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Could not load this match.'); }
+    finally { setLoading(false); }
+  }
+  useEffect(() => {
+    const controller = new AbortController();
+    refreshRecords(controller.signal)
+      .catch(error => { if (!controller.signal.aborted) setError(error instanceof Error ? error.message : 'Could not load saved matches.'); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [id]);
+  const game = history.find(g => g.id === id);
+  if (!game) return <main className="mx-auto flex w-full min-h-dvh max-w-xl md:max-w-3xl flex-col items-center justify-center gap-4 px-6 text-center">
+    <p role={error ? 'alert' : 'status'} className="text-sm text-[#62626A]">{error || (loading ? 'Loading scorecard…' : 'This match could not be found.')}</p>
+    {error && <button onClick={() => { setLoading(true); void loadHistory(); }} className="rounded-xl bg-[#F4F6F9] px-4 py-3 text-sm font-semibold">Try again</button>}
+    <Link href="/" className="py-3 text-sm font-semibold text-[#047857]">Back to dashboard</Link>
+  </main>;
 
   const triggerFeedback = () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(12);
@@ -42,17 +47,14 @@ export default function ScorePage() {
 
   const totalParPlayed = Array.from({ length: 18 }, (_, i) => i + 1).reduce((acc, hNum) => {
     const holeWasPlayed = game.scoresJson[String(hNum)];
-    if (holeWasPlayed) {
+    if (holeWasPlayed?.some(score => score > 0)) {
       return acc + (game.coursePars[hNum - 1] || 4);
     }
     return acc;
   }, 0);
 
   const stats = game.players.map((_, pIdx) => {
-    let birdie = 0,
-      par = 0,
-      bogey = 0,
-      double = 0;
+    let birdie = 0, par = 0, bogey = 0, double = 0;
     Object.entries(game.scoresJson).forEach(([holeNum, scores]) => {
       const score = scores[pIdx];
       const pVal = game.coursePars[Number(holeNum) - 1] || 4;
@@ -66,266 +68,137 @@ export default function ScorePage() {
     return { birdie, par, bogey, double };
   });
 
-  const ranked = totals
-    .map((total, idx) => ({ name: game.players[idx], total }))
-    .filter((entry) => entry.total > 0)
-    .sort((a, b) => a.total - b.total);
-  const bestScore = ranked.length > 0 ? ranked[0].total : null;
-
-  const statRows = [
-    { label: 'Birdies', hint: '(-1)', key: 'birdie' as const, dot: 'bg-mint' },
-    { label: 'Pars', hint: '(E)', key: 'par' as const, dot: 'bg-forest' },
-    { label: 'Bogeys', hint: '(+1)', key: 'bogey' as const, dot: 'bg-amber' },
-    { label: 'Double+', hint: '(2+)', key: 'double' as const, dot: 'bg-red-500' },
-  ];
-
-  const playedHoles = Array.from({ length: 18 }, (_, i) => i + 1).filter(
-    (hNum) => game.scoresJson[String(hNum)]
-  );
-
   return (
-    <div className="min-h-[100dvh] w-full bg-canvas pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-[calc(1.15rem+env(safe-area-inset-top))] font-sans text-ink antialiased select-none">
-      <div className="mx-auto w-full max-w-md px-4">
-        {/* Header */}
-        <header className="flex items-center gap-3 pb-4 pt-2">
-          <button
-            onClick={() => {
-              triggerFeedback();
-              router.push('/');
-            }}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-ink shadow-card transition active:scale-95"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-subtle">
-              Family Golf
-            </p>
-            <h1 className="mt-1 text-lg font-semibold leading-none tracking-tight">Scorecard</h1>
-          </div>
-          <span className="rounded-full bg-white px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-subtle shadow-card">
-            Final
-          </span>
-        </header>
+    <div className="w-full max-w-xl md:max-w-3xl mx-auto min-h-[100dvh] bg-white text-black font-sans flex flex-col justify-between pb-6 antialiased px-4 md:px-6">
+      <div className="w-full">
 
-        {/* Round hero */}
-        <div className="animate-rise relative overflow-hidden rounded-[30px] shadow-float">
-          {game.imageUrl ? (
+        {error && <p role="alert" className="py-3 text-sm text-red-700">{error} <button onClick={() => { setLoading(true); void loadHistory(); }} className="px-2 py-2 underline">Retry</button></p>}
+        {/* --- DYNAMIC iOS HEADER TRUNK --- */}
+        <div className={`w-full relative transition-all duration-300 overflow-hidden ${game.imageUrl ? 'h-100' : 'h-40 bg-gradient-to-b from-[#1C1C1E] to-[#2C2C2E]'}`}>
+
+          {/* Background R2 Image Banner Asset */}
+          {game.imageUrl && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={game.imageUrl}
-                alt="Round banner"
-                className="h-60 w-full object-cover"
+                alt="Round Banner Background"
+                className="absolute inset-0 w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/25" />
-            </>
-          ) : (
-            <>
-              <div className="hero-mesh h-56 w-full" />
-              <div className="absolute inset-0 flex items-center justify-center text-white/15">
-                <Flag className="h-24 w-24" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/80" />
             </>
           )}
 
-          <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-            <span className="glass rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/80">
-              {new Date(game.date).toLocaleDateString(undefined, {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-              })}
-            </span>
-            <h2 className="mt-2 text-[22px] font-semibold leading-tight tracking-tight">
-              {game.courseName}
-            </h2>
-            <p className="mt-1 text-[11px] text-white/65">
-              {game.totalHoles} holes · {game.players.length} players · Par {totalParPlayed}
-            </p>
-          </div>
-        </div>
-
-        {/* Summary strip */}
-        <div className="animate-rise mt-4 grid grid-cols-3 divide-x divide-line rounded-[26px] bg-white py-4 shadow-card">
-          <div className="text-center">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-subtle">Holes</p>
-            <p className="mt-1 font-mono text-base font-semibold">{game.totalHoles}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-subtle">Par</p>
-            <p className="mt-1 font-mono text-base font-semibold">{totalParPlayed}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-subtle">Best</p>
-            <p className="mt-1 font-mono text-base font-semibold">{bestScore ?? '—'}</p>
-          </div>
-        </div>
-
-        {/* Leaderboard */}
-        <section className="animate-rise mt-4 rounded-[26px] bg-white p-4 shadow-card">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-amber-50 text-amber">
-                <Crown className="h-4 w-4" />
-              </span>
-              <h2 className="text-sm font-semibold tracking-tight">Leaderboard</h2>
-            </div>
-            <span className="text-[10px] font-medium text-subtle">Stroke play</span>
-          </div>
-
-          <div className="mt-3 space-y-2">
-            {ranked.length === 0 ? (
-              <p className="rounded-2xl bg-canvas px-4 py-5 text-center text-xs text-subtle">
-                No scores were recorded for this round.
-              </p>
-            ) : (
-              ranked.map((entry) => {
-                const rank = ranked.findIndex((e) => e.total === entry.total) + 1;
-                const isLeader = rank === 1;
-                return (
-                  <div
-                    key={entry.name}
-                    className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 ${
-                      isLeader ? 'bg-forest/5' : 'bg-canvas/70'
-                    }`}
-                  >
-                    <span
-                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-semibold ${
-                        isLeader ? 'bg-mint text-[#08301f]' : 'bg-white text-subtle shadow-card'
-                      }`}
-                    >
-                      {rank}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
-                      {entry.name}
-                    </span>
-                    {isLeader && (
-                      <span className="hidden rounded-full bg-white px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-forest shadow-card sm:inline">
-                        Leader
-                      </span>
-                    )}
-                    <span className="font-mono text-lg font-semibold leading-none">{entry.total}</span>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </section>
-
-        {/* Score table */}
-        <section className="mt-4 overflow-hidden rounded-[26px] bg-white shadow-card">
-          <div className="flex items-center justify-between px-4 pb-3 pt-4">
-            <h2 className="text-sm font-semibold tracking-tight">Score by hole</h2>
-            <Table2 className="h-4 w-4 text-subtle/70" />
-          </div>
-
-          <div className="no-scrollbar overflow-x-auto border-t border-line">
-            <table className="w-full border-collapse text-center text-xs">
-              <thead>
-                <tr className="border-b border-line text-[10px] uppercase tracking-wider text-subtle">
-                  <th className="sticky left-0 z-20 bg-white px-4 py-3 text-left text-[11px] font-semibold text-ink shadow-[8px_0_12px_-12px_rgba(0,0,0,0.35)]">
-                    Player
-                  </th>
-                  {playedHoles.map((hNum) => (
-                    <th key={hNum} className="min-w-[42px] px-2 py-3 font-mono text-[11px] font-normal">
-                      H{hNum}
-                    </th>
-                  ))}
-                  <th className="px-3 py-3 text-[11px] font-semibold text-ink">Tot</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                <tr className="text-[11px] text-subtle">
-                  <td className="sticky left-0 z-20 bg-white px-4 py-3 text-left font-semibold shadow-[8px_0_12px_-12px_rgba(0,0,0,0.35)]">
-                    Par
-                  </td>
-                  {playedHoles.map((hNum) => (
-                    <td key={hNum} className="px-2 py-3 font-mono font-normal">
-                      {game.coursePars[hNum - 1] || 4}
-                    </td>
-                  ))}
-                  <td className="px-3 py-3 font-mono font-semibold">{totalParPlayed}</td>
-                </tr>
-
-                {game.players.map((name, pIdx) => (
-                  <tr key={name}>
-                    <td className="sticky left-0 z-20 bg-white px-4 py-3 text-left text-[11px] font-semibold text-ink shadow-[8px_0_12px_-12px_rgba(0,0,0,0.35)]">
-                      {name}
-                    </td>
-                    {playedHoles.map((hNum) => (
-                      <td key={hNum} className="px-2 py-3 font-mono text-[11px] text-subtle">
-                        {game.scoresJson[String(hNum)][pIdx] &&
-                        game.scoresJson[String(hNum)][pIdx] !== 0
-                          ? game.scoresJson[String(hNum)][pIdx]
-                          : '—'}
-                      </td>
-                    ))}
-                    <td className="px-3 py-3 font-mono text-[13px] font-semibold text-ink">
-                      {totals[pIdx]}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* Performance */}
-        <section className="mt-4 rounded-[26px] bg-white p-4 shadow-card">
-          <h2 className="pb-1 text-sm font-semibold tracking-tight">Performance</h2>
-
-          <div className="no-scrollbar mt-2 overflow-x-auto">
-            <table className="w-full border-collapse text-center text-xs">
-              <thead>
-                <tr className="border-b border-line text-[10px] uppercase tracking-wider text-subtle">
-                  <th className="py-3 text-left font-semibold">Metric</th>
-                  {game.players.map((p) => (
-                    <th key={p} className="px-1 py-3 text-[11px] font-semibold text-ink">
-                      {p}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {statRows.map((row) => (
-                  <tr key={row.key}>
-                    <td className="py-3 text-left">
-                      <span className="flex items-center gap-2 text-[11px] font-semibold text-subtle">
-                        <span className={`h-1.5 w-1.5 rounded-full ${row.dot}`} />
-                        {row.label}
-                        <span className="text-[9px] font-normal text-subtle/70">{row.hint}</span>
-                      </span>
-                    </td>
-                    {stats.map((s, i) => (
-                      <td key={i} className="px-1 font-mono text-[13px] font-semibold text-ink">
-                        {s[row.key]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-
-      {/* Sticky return */}
-      <div className="fixed inset-x-0 bottom-0 z-40">
-        <div className="mx-auto w-full max-w-md px-4 pb-[calc(0.85rem+env(safe-area-inset-bottom))]">
-          <div className="glass-light rounded-[26px] border border-white/60 p-2 shadow-float">
+          {/* Top Interface Controls Content Overlay */}
+          <div className="absolute inset-0 p-4 flex flex-col justify-between text-white z-10">
             <button
+              aria-label="Back to dashboard"
               onClick={() => {
                 triggerFeedback();
                 router.push('/');
               }}
-              className="w-full rounded-[20px] bg-ink py-3.5 text-sm font-semibold text-white transition active:scale-[0.99]"
+              className="p-3 bg-black/30 backdrop-blur-md border border-white/10 active:bg-black/50 rounded-2xl w-10 h-10 flex items-center justify-center transition"
             >
-              Return to dashboard
+              <ArrowLeft className="w-4 h-4 text-white"/>
             </button>
+
+            <div>
+              <span className="bg-white/20 backdrop-blur-xs text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                {game.imageUrl ? 'OOTD Memory' : 'Match Settled'}
+              </span>
+              <h1 className="text-xl font-extrabold tracking-tight mt-1">{game.courseName}</h1>
+              <p className="text-xs text-white/70 mt-0.5 font-medium">
+                {new Date(game.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} • {game.totalHoles}-hole round
+              </p>
+            </div>
           </div>
         </div>
+
+        <div className="flex justify-end gap-2 px-3 pt-3">
+          <EditMatch game={game}><button className="flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-[#48484A]"><Pencil className="size-4" />Edit</button></EditMatch>
+          <DeleteRecord entity="game" id={game.id} name={game.courseName} onDeleted={() => router.push('/')}><button className="flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-red-700"><Trash2 className="size-4" />Delete</button></DeleteRecord>
+        </div>
+        {/* Score Table Container */}
+        <div className="p-3 mt-2">
+          <h3 className="text-[12px] font-bold text-[#8E8E93] uppercase tracking-wider pl-1.5 flex items-center gap-1 pb-2">
+            <Table2 className="w-3.5 h-3.5 text-[#FF9500]"/>Score Table
+          </h3>
+          <div className="bg-white rounded-3xl border border-[#F1F5F9] shadow-sm overflow-hidden">
+            <div className="overflow-x-auto block" tabIndex={0} role="region" aria-label="Round scorecard">
+              <table className="w-full text-center border-collapse tabular-nums">
+                <caption className="sr-only">Scores by player and hole</caption>
+                <thead>
+                  <tr className="bg-[#F4F6F9] text-[#8E8E93] font-bold text-[10px] uppercase tracking-wider border-b border-[#F1F5F9]">
+                    <th scope="col" className="p-3 text-left font-bold text-xs bg-white text-black sticky left-0 shadow-[1px_0_3px_rgba(0,0,0,0.04)] z-10">Player</th>
+                    {Array.from({ length: 18 }, (_, i) => i + 1).map(hNum => (
+                      game.scoresJson[String(hNum)]?.some(score => score > 0) ? <th scope="col" key={hNum} className="p-3 font-mono min-w-[42px] text-xs">H{hNum}</th> : null
+                    ))}
+                    <th scope="col" className="p-3 bg-[#E8F5E9] text-[#2E7D32] font-bold text-xs">Tot</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F1F5F9] text-sm font-semibold">
+                  <tr className="bg-[#F4F6F9]/40 text-[#8E8E93] text-xs">
+                    <td className="p-3 text-left font-bold bg-white text-[#8E8E93] sticky left-0 shadow-[1px_0_3px_rgba(0,0,0,0.04)] z-10">Par</td>
+                    {Array.from({ length: 18 }, (_, i) => i + 1).map(hNum => (
+                      game.scoresJson[String(hNum)]?.some(score => score > 0) ? (
+                        <td key={hNum} className="p-3 font-mono text-[11px] font-bold">{game.coursePars[hNum - 1] || 4}</td>
+                      ) : null
+                    ))}
+                    <td className="p-3 bg-[#E8F5E9]/30 text-[#2E7D32] font-mono text-xs font-bold">{totalParPlayed}</td>
+                  </tr>
+
+                  {game.players.map((name, pIdx) => (
+                    <tr key={name} className="hover:bg-[#F4F6F9]/40 transition">
+                      <td className="p-3 text-left font-bold text-black bg-white sticky left-0 shadow-[1px_0_3px_rgba(0,0,0,0.04)] z-10 text-xs">{name}</td>
+                      {Array.from({ length: 18 }, (_, i) => i + 1).map(hNum => (
+                        game.scoresJson[String(hNum)]?.some(score => score > 0) ? (
+                          <td key={hNum} className="p-3 font-mono text-[#48484A] text-xs">
+                            {game.scoresJson[String(hNum)][pIdx] && game.scoresJson[String(hNum)][pIdx] !== 0
+                              ? game.scoresJson[String(hNum)][pIdx]
+                              : '—'}
+                          </td>
+                        ) : null
+                      ))}
+                      <td className="p-3 bg-[#E8F5E9]/60 text-[#2E7D32] font-mono font-bold text-sm">{totals[pIdx]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Metrics Grid */}
+        <div className="px-3 space-y-1.5 mt-2">
+          <h3 className="text-[12px] font-bold text-[#8E8E93] uppercase tracking-wider pl-1.5 flex items-center gap-1">
+            <Trophy className="w-3.5 h-3.5 text-[#FF9500]"/> Performance Grid
+          </h3>
+          <div className="bg-white rounded-3xl border border-[#F1F5F9] shadow-sm p-3 overflow-x-auto">
+            <table className="w-full text-xs border-collapse text-center">
+              <thead>
+                <tr className="text-[#8E8E93] font-bold border-b border-[#F1F5F9]">
+                  <th scope="col" className="text-left py-2 font-medium">Metric</th>
+                  {game.players.map(p => <th scope="col" key={p} className="py-2 font-bold text-black">{p}</th>)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F1F5F9]/60 font-medium text-[#48484A]">
+                <tr><td className="text-left py-2.5 font-bold text-[#34C759]">Birdies ( -1 )</td>{stats.map((s, i) => <td key={i} className="font-mono">{s.birdie}</td>)}</tr>
+                <tr><td className="text-left py-2.5 font-bold text-[#007AFF]">Pars ( E )</td>{stats.map((s, i) => <td key={i} className="font-mono">{s.par}</td>)}</tr>
+                <tr><td className="text-left py-2.5 font-bold text-[#FF9500]">Bogeys ( +1 )</td>{stats.map((s, i) => <td key={i} className="font-mono">{s.bogey}</td>)}</tr>
+                <tr><td className="text-left py-2.5 font-bold text-[#FF3B30]">Double+ ( 2+ )</td>{stats.map((s, i) => <td key={i} className="font-mono">{s.double}</td>)}</tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <button
+          onClick={() => { triggerFeedback(); router.push('/'); }}
+          className="w-full bg-[#1C1C1E] active:bg-black text-white font-bold py-4 rounded-3xl shadow-sm transition text-sm"
+        >
+          Return to Dashboard
+        </button>
       </div>
     </div>
   );

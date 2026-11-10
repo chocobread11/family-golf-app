@@ -1,14 +1,17 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGolfStore } from '@/src/store/useGolfStore';
-import { ChevronLeft, ChevronRight, Delete, Space, Flag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Delete, Space } from 'lucide-react';
+import { saveRecord, toGameState, type GameRecord } from '@/src/lib/golf-api';
 
 export default function PlayMatch() {
   const router = useRouter();
-  const { activeGame, updateHoleScores, saveActiveToHistory } = useGolfStore();
+  const { activeGame, updateHoleScores } = useGolfStore();
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [stepIdx, setStepIdx] = useState(0);
-  const [rawString, setRawString] = useState('');
+  const [entry, setEntry] = useState<{ hole: number; value: string } | null>(null);
 
   const totalSteps = activeGame?.totalHoles || 9;
   const loopOffset = activeGame?.startingLoop === 'Back' ? 10 : 1;
@@ -20,76 +23,67 @@ export default function PlayMatch() {
     } else {
       // Standard calculation
       num = i + loopOffset;
-      if (num > 18) num -= num > 18 ? 18 : 0;
+      if (num > 18) num -= (num > 18 ? 18 : 0);
     }
     return num;
   });
 
   const activeHole = playedHoles[stepIdx];
   const parVal = activeGame?.coursePars[activeHole - 1] || 4;
+  const savedScores = activeGame?.scoresJson[String(activeHole)];
+  const rawString = entry?.hole === activeHole ? entry.value : savedScores?.length ? savedScores.join(' ') + ' ' : '';
+  const setRawString = (next: React.SetStateAction<string>) => {
+    setEntry({ hole: activeHole, value: typeof next === 'function' ? next(rawString) : next });
+  };
   const currentScores = rawString.trim().split(/\s+/);
-
-  useEffect(() => {
-    if (!activeGame) return;
-
-    const savedScoresForHole = activeGame.scoresJson[String(activeHole)];
-    if (savedScoresForHole && savedScoresForHole.length > 0) {
-      const reconstructedString = savedScoresForHole.join(' ') + ' ';
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- restore persisted scores when navigating holes
-      setRawString(reconstructedString);
-    } else {
-      setRawString('');
-    }
-  }, [activeHole, activeGame]);
 
   // --- Haptic Feedback Engine ---
   const triggerFeedback = (type: 'tap' | 'error' | 'success') => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       if (type === 'error') navigator.vibrate([40, 40, 40]);
       else if (type === 'success') navigator.vibrate([15, 30, 15]);
-      else navigator.vibrate(12);
+      else navigator.vibrate(12); // Standard tap for dials and navigation
     }
   };
 
   if (!activeGame) {
     return (
-      <div className="flex min-h-[100dvh] w-full items-center justify-center bg-canvas px-5 font-sans text-ink antialiased">
-        <div className="w-full max-w-sm rounded-[30px] bg-white p-7 text-center shadow-float">
-          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-canvas text-forest">
-            <Flag className="h-6 w-6" />
-          </span>
-          <p className="mt-4 text-base font-semibold tracking-tight">No active round</p>
-          <p className="mt-1 text-sm text-subtle">Set up a match to start scoring.</p>
-          <button
-            onClick={() => {
-              triggerFeedback('tap');
-              router.push('/setup');
-            }}
-            className="mt-5 w-full rounded-2xl bg-gradient-to-r from-forest to-forest-deep py-3.5 text-sm font-semibold text-white transition active:scale-[0.99]"
-          >
-            Setup match
-          </button>
-        </div>
+      <div className="w-full max-w-xl md:max-w-3xl mx-auto h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center antialiased">
+        <p className="text-sm font-bold text-[#8E8E93]">No active round found.</p>
+        <button
+          onClick={() => {
+            triggerFeedback('tap');
+            router.push('/setup');
+          }}
+          className="mt-4 px-5 py-3 bg-[#1C1C1E] text-white rounded-2xl font-bold text-xs shadow-sm transition active:scale-[0.98]"
+        >
+          Setup Match
+        </button>
       </div>
     );
   }
 
   const handleKeyPress = (val: string) => {
-    triggerFeedback('tap');
+    triggerFeedback('tap'); // <--- Haptics fire on every dial press here
     if (val === 'BACK') {
-      setRawString((prev) => prev.slice(0, -1));
+      setRawString(prev => prev.slice(0, -1));
     } else if (val === 'SPACE') {
       if (rawString.length > 0 && rawString[rawString.length - 1] !== ' ') {
-        setRawString((prev) => prev + ' ');
+        setRawString(prev => prev + ' ');
       }
     } else {
-      setRawString((prev) => prev + val);
+      setRawString(prev => prev + val);
     }
   };
 
   const handleSaveHoleState = () => {
     const cleanSegments = rawString.trim().split(/\s+/).filter(Boolean);
     const scoresArray = cleanSegments.map(Number);
+    if (scoresArray.length > activeGame.players.length || scoresArray.some(score => !Number.isInteger(score) || score < 0 || score > 99)) {
+      setSaveError('Enter one score per player, from 0 to 99. Use Space between players.');
+      return false;
+    }
+    setSaveError('');
 
     if (scoresArray.length === 0) {
       const emptyPlaceholderArray = Array(activeGame.players.length).fill(0);
@@ -105,182 +99,146 @@ export default function PlayMatch() {
     return true;
   };
 
-  const handleFinishRound = () => {
-    triggerFeedback('success');
-    handleSaveHoleState();
-
-    const finalSnapshot = saveActiveToHistory();
-    if (finalSnapshot) {
-      if (navigator.onLine) {
-        fetch('/api/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(finalSnapshot),
-        }).catch(() => console.log('Sync server down. Saved locally inside cache.'));
-      }
-      router.push(`/score/${finalSnapshot.id}`);
-    }
+  const handleFinishRound = async () => {
+    if (isSaving || !handleSaveHoleState()) return;
+    const snapshot = useGolfStore.getState().activeGame;
+    if (!snapshot) return;
+    setIsSaving(true);
+    try {
+      const { game } = await saveRecord<{ game: GameRecord }>('game', snapshot, false);
+      useGolfStore.setState(state => ({ history: [toGameState(game), ...state.history.filter(item => item.id !== game.id)], activeGame: null }));
+      triggerFeedback('success');
+      router.push(`/score/${game.id}`);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Could not save this round. Your scores are kept on this device. Try again.');
+    } finally { setIsSaving(false); }
   };
 
   const nextStep = () => {
-    triggerFeedback('tap');
-    handleSaveHoleState();
+    triggerFeedback('tap'); // Added haptics for navigation
+    if (!handleSaveHoleState()) return;
     if (stepIdx < totalSteps - 1) {
-      setStepIdx((p) => p + 1);
+      setEntry(null);
+      setStepIdx(p => p + 1);
     }
   };
 
   const prevStep = () => {
-    triggerFeedback('tap');
-    handleSaveHoleState();
+    triggerFeedback('tap'); // Added haptics for navigation
+    if (!handleSaveHoleState()) return;
     if (stepIdx > 0) {
-      setStepIdx((p) => p - 1);
+      setEntry(null);
+      setStepIdx(p => p - 1);
     }
   };
 
   return (
-    <div className="min-h-[100dvh] w-full bg-canvas font-sans text-ink antialiased select-none">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-4 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-[calc(1.15rem+env(safe-area-inset-top))]">
-        {/* Top navigation */}
-        <div className="flex flex-shrink-0 items-center justify-between">
-          <button
-            onClick={prevStep}
-            disabled={stepIdx === 0}
-            className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-card transition active:scale-95 disabled:opacity-40"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+    <div className="w-full max-w-xl md:max-w-3xl mx-auto h-[100dvh] bg-white text-black font-sans px-4 md:px-6 pt-6 subpixel-antialiased flex flex-col justify-between overflow-hidden select-none pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
 
-          <div className="glass-light rounded-full border border-white/60 px-4 py-2 shadow-card">
-            <span className="text-[11px] font-semibold text-subtle">
-              Hole <span className="text-ink">{stepIdx + 1}</span> / {totalSteps}
-            </span>
-          </div>
-
-          <button
-            onClick={nextStep}
-            disabled={stepIdx === totalSteps - 1}
-            className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-card transition active:scale-95 disabled:opacity-40"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Segmented progress */}
-        <div className="mt-4 flex flex-shrink-0 gap-1">
-          {Array.from({ length: totalSteps }).map((_, i) => (
-            <span
-              key={i}
-              className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                i <= stepIdx ? 'bg-forest' : 'bg-ink/10'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Hole hero */}
-        <div className="hero-mesh relative mt-4 flex-shrink-0 overflow-hidden rounded-[28px] p-5 text-white shadow-hero">
-          <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-mint/20 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-16 -left-8 h-36 w-36 rounded-full bg-forest/40 blur-2xl" />
-
-          <div className="relative flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/50">
-                Now playing
-              </p>
-              <h2 className="mt-1 text-[62px] font-semibold leading-none tracking-tight">
-                {activeHole}
-              </h2>
-            </div>
-            <div className="glass rounded-2xl px-3.5 py-2.5 text-center">
-              <p className="text-[9px] font-medium uppercase tracking-[0.16em] text-white/60">Par</p>
-              <p className="mt-0.5 text-2xl font-semibold leading-none">{parVal}</p>
-            </div>
-          </div>
-
-          {/* Player score chips */}
-          <div className="no-scrollbar relative mt-4 flex gap-2 overflow-x-auto">
-            {activeGame.players.map((player, idx) => {
-              const val = currentScores[idx];
-              return (
-                <div
-                  key={player}
-                  className="flex shrink-0 items-center gap-2 rounded-full bg-white/10 px-2.5 py-1.5 backdrop-blur-sm"
-                >
-                  <span className="grid h-5 w-5 place-items-center rounded-full bg-white/20 text-[8px] font-semibold">
-                    {player.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="text-[11px] text-white/75">{player}</span>
-                  <span
-                    className={`font-mono text-sm font-semibold ${
-                      val ? 'text-mint' : 'text-white/35'
-                    }`}
-                  >
-                    {val || '—'}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Entry display */}
-          <div className="glass relative mt-3 flex items-center justify-between gap-3 rounded-2xl px-4 py-3">
-            <p className="shrink-0 text-[9px] font-medium uppercase tracking-[0.16em] text-white/50">
-              Entry
-            </p>
-            <div className="no-scrollbar min-w-0 flex-1 overflow-x-auto text-right font-mono text-xl font-medium tracking-[0.16em]">
-              {rawString ? (
-                <span className="whitespace-nowrap">{rawString}</span>
-              ) : (
-                <span className="font-sans text-[11px] font-normal tracking-normal text-white/40">
-                  Tap the keypad
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Keypad */}
-        <div className="mt-auto pt-4">
-          <div className="grid grid-cols-3 gap-2">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-              <button
-                key={n}
-                onClick={() => handleKeyPress(String(n))}
-                className="flex h-[52px] items-center justify-center rounded-[18px] bg-white text-lg font-semibold text-ink shadow-card transition active:scale-[0.96] active:bg-canvas"
-              >
-                {n}
-              </button>
-            ))}
-            <button
-              onClick={() => handleKeyPress('SPACE')}
-              className="flex h-[52px] items-center justify-center rounded-[18px] bg-white text-subtle shadow-card transition active:scale-[0.96] active:bg-canvas"
-            >
-              <Space className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => handleKeyPress('0')}
-              className="flex h-[52px] items-center justify-center rounded-[18px] bg-white text-lg font-semibold text-ink shadow-card transition active:scale-[0.96] active:bg-canvas"
-            >
-              0
-            </button>
-            <button
-              onClick={() => handleKeyPress('BACK')}
-              className="flex h-[52px] items-center justify-center rounded-[18px] bg-white text-subtle shadow-card transition active:scale-[0.96] active:bg-canvas"
-            >
-              <Delete className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Primary action */}
+      {/* iOS Top Bar Navigation */}
+      <div className="flex items-center justify-between pb-3 pt-1 flex-shrink-0">
         <button
-          onClick={stepIdx === totalSteps - 1 ? handleFinishRound : nextStep}
-          className="mt-3 w-full flex-shrink-0 rounded-[20px] bg-gradient-to-r from-forest to-forest-deep py-4 text-sm font-semibold text-white shadow-lg shadow-forest/25 transition active:scale-[0.99]"
+          aria-label="Previous hole"
+          onClick={prevStep}
+          disabled={stepIdx === 0 || isSaving}
+          className="p-3 bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#1C1C1E] active:bg-[#F1F5F9] rounded-2xl disabled:opacity-20 transition shadow-xs"
         >
-          {stepIdx === totalSteps - 1 ? 'Save & finish' : 'Next hole'}
+          <ChevronLeft className="w-5 h-5"/>
         </button>
+        <div className="text-center space-y-0.5">
+          <h2 className="text-3xl font-extrabold text-[#1C1C1E] tracking-tight">Hole {activeHole}</h2>
+          <span className="text-sm font-bold uppercase tracking-widest text-white bg-[#ff9e59] border border-[#F1F5F9]/40 px-3.5 py-1 rounded-full inline-block">
+            Par {parVal}
+          </span>
+          <button disabled={isSaving} onClick={() => { if (handleSaveHoleState()) router.push('/'); }} className="block mx-auto px-2 py-2 text-xs font-semibold text-[#62626A]">Save & exit</button>
+        </div>
+        {stepIdx === totalSteps - 1 ? (
+          <button
+            onClick={handleFinishRound}
+            disabled={isSaving}
+            className="bg-[#059669] text-white font-bold text-xs uppercase h-12 tracking-wider px-4 py-3 rounded-2xl transition active:scale-[0.97] shadow-[0_4px_12px_rgba(52,199,89,0.2)]"
+          >
+            {isSaving ? 'Saving…' : 'Finish'}
+          </button>
+        ) : (
+          <button
+            aria-label="Next hole"
+            disabled={isSaving}
+            onClick={nextStep}
+            className="p-3 bg-[#F4F6F9] border border-[#F1F5F9]/40 text-[#1C1C1E] active:bg-[#F1F5F9] rounded-2xl transition shadow-xs"
+          >
+            <ChevronRight className="w-5 h-5"/>
+          </button>
+        )}
       </div>
+
+      {/* --- STANDARDIZED MID ZONE CONTAINER --- */}
+      <div className="flex-1 grid grid-rows-[auto_1fr] min-h-0 py-2">
+
+        {/* Row 1: Input Monitor Block */}
+        <div className="w-full text-center font-mono text-3xl font-black tracking-widest text-[#34C759] h-14 flex items-center justify-center">
+            {rawString || (
+            <span className="text-[#8E8E93] text-[16px] tracking-normal font-sans font-bold opacity-60">
+                Fill the score..
+            </span>
+            )}
+        </div>
+
+        {/* Row 2: Dynamic Stable Roster List Container */}
+        <div className="w-full px-6 divide-y divide-[#F1F5F9]/50 overflow-y-auto min-h-0">
+            {activeGame.players.map((p, idx) => (
+            <div key={p} className="flex justify-between py-3.5 items-center border-transparent">
+                <span className="text-xl font-bold text-[#1C1C1E] tracking-tight">{p}</span>
+                <span className={`font-mono text-xl font-black tracking-tight transition duration-100 ${currentScores[idx] ? 'text-black' : 'text-[#8E8E93]/20'}`}>
+                {currentScores[idx] || '—'}
+                </span>
+            </div>
+            ))}
+        </div>
+
+      </div>
+
+      {/* --- 100% RESPONSIVE ADAPTIVE DOCK KEYPAD PANEL --- */}
+      <div className="w-full max-w-md mx-auto bg-white p-4 rounded-3xl shrink-0 mb-1">
+        {saveError && <p role="alert" className="mb-3 text-sm text-red-700">{saveError}</p>}
+        <p className="mb-3 text-center text-xs text-[#62626A]">Use Space between each player’s score.</p>
+        <div className="grid grid-cols-3 gap-x-4 gap-y-3 w-full">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+            <button
+              key={n}
+              disabled={isSaving}
+              onClick={() => handleKeyPress(String(n))}
+              className="w-full aspect-[4/2.8] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30"
+            >
+              {n}
+            </button>
+          ))}
+          <button
+            aria-label="Next player's score (space)"
+            disabled={isSaving}
+            onClick={() => handleKeyPress('SPACE')}
+            className="w-full aspect-[4/2.8] bg-[#E8F5E9] active:bg-[#C8E6C9] text-[#2E7D32] rounded-2xl flex items-center justify-center shadow-xs transition"
+          >
+            <Space className="w-5 h-5 stroke-[2.5]" />
+          </button>
+          <button
+            disabled={isSaving}
+            onClick={() => handleKeyPress('0')}
+            className="w-full aspect-[4/2.8] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30 shadow-xs"
+          >
+            0
+          </button>
+          <button
+            aria-label="Delete last digit"
+            disabled={isSaving}
+            onClick={() => handleKeyPress('BACK')}
+            className="w-full aspect-[4/2.8] bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] rounded-2xl flex items-center justify-center shadow-xs transition"
+          >
+            <Delete className="w-5 h-5 stroke-[2.5]" />
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }

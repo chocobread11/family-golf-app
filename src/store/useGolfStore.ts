@@ -27,6 +27,7 @@ export interface GameState {
 }
 
 interface GolfStore {
+  pendingPhotoCleanup: number;
   history: GameState[];
   savedCourses: Course[];
   savedGroups: GroupTemplate[];
@@ -41,6 +42,7 @@ interface GolfStore {
 export const useGolfStore = create<GolfStore>()(
   persist(
     (set, get) => ({
+      pendingPhotoCleanup: 0,
       history: [],
       
       // ✨ HARDCODED LOCAL SEED DATA FOR DB-FREE TESTING ON MOBILE
@@ -70,7 +72,7 @@ export const useGolfStore = create<GolfStore>()(
       startNewGame: (config) => set({
         activeGame: {
           ...config,
-          id: `game_${Date.now()}`,
+          id: crypto.randomUUID(),
           date: new Date().toISOString(),
           scoresJson: {}
         }
@@ -102,9 +104,9 @@ export const useGolfStore = create<GolfStore>()(
       clearActiveGame: () => set({ activeGame: null }),
       
       // Dynamic fallback safety: Merges fetched records safely alongside default hardcoded arrays
-      syncTemplates: (courses, groups) => set((state) => ({
-        savedCourses: courses.length > 0 ? courses : state.savedCourses,
-        savedGroups: groups.length > 0 ? groups : state.savedGroups,
+      syncTemplates: (courses, groups) => set(() => ({
+        savedCourses: courses,
+        savedGroups: groups,
       }))
     }),
     {

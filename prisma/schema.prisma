@@ -26,9 +26,17 @@ model Game {
   date       DateTime @default(now())
   courseId   String
   totalHoles Int
+  startingLoop String @default("Front")
+  coursePars Int[] @default([])
   imageUrl   String?
   players    String[]
   scoresJson Json
   createdAt  DateTime @default(now())
   course     Course   @relation(fields: [courseId], references: [id])
+}
+
+// Keep failed storage deletions retryable after a match is changed or removed.
+model ImageCleanup {
+  url       String   @id
+  createdAt DateTime @default(now())
 }

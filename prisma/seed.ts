@@ -44,12 +44,7 @@ async function main() {
   // --- 2. 18-HOLE COURSE TEMPLATE SEEDS (Upserts update existing or append safely) ---
   await prisma.course.upsert({
     where: { name: 'Saujana Impian Golf Club' },
-    update: {
-      pars: [
-        4, 3, 5, 4, 5, 4, 3, 4, 4,
-        4, 4, 3, 4, 5, 4, 3, 5, 4
-      ]
-    },
+    update: {},
     create: {
       name: 'Saujana Impian Golf Club',
       pars: [
@@ -61,12 +56,7 @@ async function main() {
 
   await prisma.course.upsert({
     where: { name: 'Berjaya Hills Golf & Country Club' },
-    update: {
-      pars: [
-        4, 4, 5, 4, 3, 4, 4, 3, 5,
-        5, 4, 4, 3, 4, 4, 3, 4, 5
-      ]
-    },
+    update: {},
     create: {
       name: 'Berjaya Hills Golf & Country Club',
       pars: [
@@ -78,12 +68,7 @@ async function main() {
 
   await prisma.course.upsert({
     where: { name: 'Bangi Golf Resort' },
-    update: {
-      pars: [
-        4, 4, 5, 3, 4, 4, 3, 5, 4,
-        4, 4, 3, 5, 4, 4, 5, 3, 4
-      ]
-    },
+    update: {},
     create: {
       name: 'Bangi Golf Resort',
       pars: [
@@ -95,9 +80,7 @@ async function main() {
 
   await prisma.course.upsert({
     where: { name: 'Amverton Cove Golf Resort' },
-    update: {
-      pars: [4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4]
-    },
+    update: {},
     create: {
       name: 'Amverton Cove Golf Resort',
       pars: [4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4],
@@ -106,9 +89,7 @@ async function main() {
 
   await prisma.course.upsert({
     where: { name: 'Kinrara Golf Club' },
-    update: {
-      pars: [4, 4, 3, 5, 4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 3, 5, 4, 4]
-    },
+    update: {},
     create: {
       name: 'Kinrara Golf Club',
       pars: [4, 4, 3, 5, 4, 4, 5, 3, 4, 4, 3, 5, 4, 4, 3, 5, 4, 4],
@@ -117,9 +98,7 @@ async function main() {
 
   await prisma.course.upsert({
     where: { name: 'Bukit Beruntung Golf Resort' },
-    update: {
-      pars: [4, 5, 4, 3, 4, 4, 3, 5, 4, 5, 4, 3, 4, 4, 5, 3, 4, 4]
-    },
+    update: {},
     create: {
       name: 'Bukit Beruntung Golf Resort',
       pars: [4, 5, 4, 3, 4, 4, 3, 5, 4, 5, 4, 3, 4, 4, 5, 3, 4, 4],
@@ -128,9 +107,7 @@ async function main() {
 
   await prisma.course.upsert({
     where: { name: 'Glenmarie Golf & Country Club' },
-    update: {
-      pars: [4, 4, 5, 3, 4, 4, 5, 3, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4]
-    },
+    update: {},
     create: {
       name: 'Glenmarie Golf & Country Club',
       pars: [4, 4, 5, 3, 4, 4, 5, 3, 4, 4, 5, 4, 3, 4, 4, 3, 5, 4],

@@ -17,13 +17,9 @@ export const metadata: Metadata = {
   description: "Zainul Ariffin's Family Golf Session",
 };
 
-// ✨ LOCKS VIEWPORT SCALING: Blocks mobile browsers from triggering auto-zoom on input elements
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: "#f3f2ed",
 };
 
 export default function RootLayout({
@@ -36,7 +32,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-canvas text-ink">{children}</body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

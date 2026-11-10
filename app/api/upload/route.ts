@@ -1,24 +1,22 @@
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-
-const accountId = "04b9cefa17aa6645752db5e69635d80b";
-const bucketName = "golf-image";
-
-const r2Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID || "27e9b68100504f598be61f414e95b4f2",
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "f4934ba2461303351488628ff3bc6cc5d67f413a7b24cd5dc0bf5a2c153c1d10",
-  },
-});
+import { retryPhotoCleanup } from '@/src/lib/r2';
 
 export async function POST(request: Request) {
   try {
+    const accountId = process.env.R2_ACCOUNT_ID;
+    const bucketName = process.env.R2_BUCKET_NAME;
+    const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+    const baseDomain = process.env.R2_PUBLIC_DOMAIN || process.env.R2_PUBLIC_URL;
+    if (!accountId || !bucketName || !accessKeyId || !secretAccessKey || !baseDomain) {
+      return NextResponse.json({ error: 'Photo uploads are not configured here. You can start a round without a photo.' }, { status: 503 });
+    }
+    const r2Client = new S3Client({ region: 'auto', endpoint: `https://${accountId}.r2.cloudflarestorage.com`, credentials: { accessKeyId, secretAccessKey } });
     const { filename, contentType } = await request.json();
 
-    if (!filename || !contentType) {
+    if (typeof filename !== 'string' || typeof contentType !== 'string' || !filename || !contentType.startsWith('image/')) {
       return NextResponse.json({ error: 'Missing file details' }, { status: 400 });
     }
 
@@ -34,15 +32,22 @@ export async function POST(request: Request) {
     // Generate the presigned secure upload token valid for 5 minutes
     const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 300 });
 
-    const baseDomain = process.env.R2_PUBLIC_DOMAIN || "https://pub-4237ea1575694e2fa537c5be9983de9c.r2.dev";
-    const publicUrl = `${baseDomain}/${fileKey}`;
+    const publicUrl = `${baseDomain.replace(/\/$/, '')}/${fileKey}`;
 
     return NextResponse.json({ uploadUrl, publicUrl }, { status: 200 });
   } catch (error) {
     console.error('❌ R2 signing link generation failure:', error);
     return NextResponse.json({ 
       error: 'Failed to sign storage endpoint',
-      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
+  }
+}
+
+export async function DELETE() {
+  try {
+    const pendingPhotoCleanup = await retryPhotoCleanup();
+    return NextResponse.json({ pendingPhotoCleanup });
+  } catch {
+    return NextResponse.json({ error: 'Could not finish photo cleanup. Your saved matches are safe. Try again.' }, { status: 503 });
   }
 }

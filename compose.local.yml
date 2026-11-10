@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: family-golf-local-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: golf
+      POSTGRES_PASSWORD: golf_local
+      POSTGRES_DB: family_golf
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - golf_local_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U golf -d family_golf"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  golf_local_data:

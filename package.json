@@ -2,25 +2,36 @@
   "name": "family-golf-app",
   "version": "0.1.0",
   "private": true,
-"scripts": {
+  "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:up": "docker compose -f compose.local.yml up -d --wait",
+    "db:down": "docker compose -f compose.local.yml stop",
+    "db:setup": "prisma generate && prisma db push && prisma db seed",
+    "db:deploy": "prisma db push && prisma db seed",
+    "db:demo": "bun prisma/seed-demo.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1080.0",
     "@aws-sdk/s3-request-presigner": "^3.1080.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@radix-ui/react-alert-dialog": "^1.2.1",
+    "@radix-ui/react-dialog": "^1.3.1",
+    "clsx": "^2.1.1",
     "lucide-react": "^1.23.0",
     "next": "16.2.10",
     "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "tailwind-merge": "^3.7.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
