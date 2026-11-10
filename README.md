@@ -76,6 +76,12 @@ bun start
 
 Seed operations add missing courses and groups without overwriting edited templates or deleting history. Existing deployments need the updated Prisma schema applied before serving this version.
 
+### Healthcheck in Coolify
+
+Enable the application's healthcheck with method **GET**, scheme **http**, host **127.0.0.1**, path **/api/health**, port **3000**, and expected status **200**. Use the application's internal HTTP port; HTTPS can remain on the public proxy. The Docker image includes `curl`, which [Coolify's HTTP healthchecks require](https://coolify.io/docs/applications/configuration/health-checks). Save and redeploy after enabling the check.
+
+The endpoint returns `{ "status": "ok", "timestamp": "..." }` with `Cache-Control: no-store`. It checks that the application is responding and does not query PostgreSQL or R2. Database and photo-storage errors remain visible through their normal application requests.
+
 ### Database connection errors in Coolify
 
 Set `DATABASE_URL` in the application's **runtime** environment to the database's Internal URL when both resources share a destination network. The hostname must resolve from the app container; `localhost` refers to the app container itself. Recreate or redeploy the app after changing its environment.

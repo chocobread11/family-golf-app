@@ -2,7 +2,7 @@ FROM oven/bun:1.3.1 AS bun
 
 FROM node:22-bookworm-slim AS base
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates openssl \
+    && apt-get install -y --no-install-recommends ca-certificates curl openssl \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
