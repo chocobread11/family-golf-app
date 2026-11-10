@@ -73,10 +73,10 @@ test('history supports course and group editing, deletion confirmation, and mobi
   await page.getByRole('button', { name: 'Add course', exact: true }).click();
   let dialog = page.getByRole('dialog');
   await dialog.getByLabel('Course name').fill(`${prefix} UI course`);
-  await dialog.getByLabel('Par for each hole').fill('4 4 4');
-  await dialog.getByRole('button', { name: 'Save changes' }).click();
-  await expect(dialog.getByRole('alert')).toContainText('exactly 9 or 18');
-  await dialog.getByLabel('Par for each hole').fill(Array(18).fill(4).join(' '));
+  await expect(dialog.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+  for (let i = 0; i < 3; i++) await dialog.getByRole('button', { name: 'Add par 4', exact: true }).click();
+  await expect(dialog.getByText('Add 6 more holes to save a 9-hole course.')).toBeVisible();
+  for (let i = 0; i < 15; i++) await dialog.getByRole('button', { name: 'Add par 4', exact: true }).click();
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(dialog).not.toBeVisible();
   let data = await (await request.get('/api/sync')).json();
@@ -98,14 +98,18 @@ test('history supports course and group editing, deletion confirmation, and mobi
   await page.getByRole('button', { name: 'Add group', exact: true }).click();
   dialog = page.getByRole('dialog');
   await dialog.getByLabel('Group name').fill(`${prefix} UI group`);
-  await dialog.getByLabel('Players', { exact: true }).fill('Player A\nPlayer B');
+  await expect(dialog.getByLabel('Player 1 name', { exact: true })).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Add player', exact: true }).click();
+  await dialog.getByLabel('Player 1 name', { exact: true }).fill('Player A');
+  await dialog.getByRole('button', { name: 'Add player', exact: true }).click();
+  await dialog.getByLabel('Player 2 name', { exact: true }).fill('Player B');
   await dialog.getByRole('button', { name: 'Save changes' }).click();
   await expect(dialog).not.toBeVisible();
   data = await (await request.get('/api/sync')).json();
   const group = data.groups.find((g: { name: string }) => g.name === `${prefix} UI group`);
   cleanup.push({ entity: 'group', id: group.id });
   await page.getByRole('button', { name: `Edit ${prefix} UI group`, exact: true }).click();
-  await page.getByRole('dialog').getByLabel('Players', { exact: true }).fill('Player A\nPlayer C');
+  await page.getByRole('dialog').getByLabel('Player 2 name', { exact: true }).fill('Player C');
   await page.getByRole('dialog').getByRole('button', { name: 'Save changes' }).click();
   await expect(page.getByText('Player A, Player C', { exact: true })).toBeVisible();
   for (const width of [320, 390, 768, 1280]) {
@@ -119,7 +123,7 @@ test('history supports course and group editing, deletion confirmation, and mobi
 
 test('a round survives a failed save, can be edited, reloads from the database, and is deleted', async ({ page, request }) => {
   await page.goto('/setup');
-  await expect(page.getByRole('button', { name: 'Start Round', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Start Round', exact: true })).toBeDisabled();
   const templates = await (await request.get('/api/sync')).json();
   const flight = templates.groups.find((group: { name: string }) => group.name === 'Full Flight');
   await page.getByLabel('Player Group', { exact: true }).selectOption(flight.id);
@@ -159,7 +163,7 @@ test('a round survives a failed save, can be edited, reloads from the database, 
   await dialog.getByLabel('Player 1, hole 1', { exact: true }).fill('3');
   await dialog.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  await expect(page.getByRole('cell', { name: 'Edited golfer', exact: true })).toBeVisible();
+  await expect(page.getByRole('rowheader', { name: 'Edited golfer', exact: true })).toBeVisible();
   const res = await request.get(`/api/sync?id=${id}`);
   const saved = (await res.json()).game;
   expect(saved.players[0]).toBe('Edited golfer');

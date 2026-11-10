@@ -40,7 +40,7 @@ export default function Dashboard() {
   const stringFullDate = today.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
-    <div className="w-full max-w-xl md:max-w-3xl mx-auto min-h-[100dvh] bg-white text-black font-sans antialiased px-4 md:px-6 py-0 md:py-6 flex flex-col justify-start pb-8">
+    <main className="w-full max-w-xl md:max-w-3xl mx-auto min-h-[100dvh] bg-white text-black font-sans antialiased px-4 md:px-6 py-0 md:py-6 flex flex-col justify-start pb-8">
 
       <div className="flex items-center justify-between px-1.5 py-4 mb-4 gap-4 shadow-[0_8px_25px_rgba(0,0,0,0.01)]">
         <div className="space-y-0.5">
@@ -48,7 +48,7 @@ export default function Dashboard() {
             Guten Morgen
           </h1>
           <p className="text-base sm:text-lg font-bold text-[#48484A] tracking-tight">
-            Up for a golf today?
+            Up for a round today?
           </p>
         </div>
 
@@ -56,7 +56,7 @@ export default function Dashboard() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/golf-family.jpg"
-            alt="User profile avatar snapshot"
+            alt="Family golf illustration"
             className="w-full h-full object-cover"
           />
         </div>
@@ -70,7 +70,7 @@ export default function Dashboard() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/golf-swing.png"
-              alt="Live Golf Swing Action Profile"
+              alt=""
               className="w-full h-full object-cover scale-105"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -79,9 +79,9 @@ export default function Dashboard() {
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
-            <span className="text-[11px] font-bold text-[#8E8E93] uppercase tracking-widest">Today</span>
+            <span className="text-[11px] font-bold text-[#62626A] uppercase tracking-widest">Today</span>
             <h2 className="text-2xl font-extrabold text-[#1C1C1E] tracking-tight leading-tight mt-0.5">{stringDay}</h2>
-            <p className="text-xs font-semibold text-[#8E8E93] mt-0.5 tracking-tight">{stringFullDate}</p>
+            <p className="text-xs font-semibold text-[#62626A] mt-0.5 tracking-tight">{stringFullDate}</p>
           </div>
 
           {isSyncing && (
@@ -96,7 +96,7 @@ export default function Dashboard() {
           {activeGame ? (
             <button
               onClick={() => { triggerFeedback(); router.push('/play'); }}
-              className="w-full flex items-center justify-center gap-2 bg-[#FF9500] text-white font-bold py-4 px-6 rounded-3xl active:scale-[0.98] active:opacity-90 shadow-[0_8px_20px_rgba(255,149,0,0.15)] transition text-sm tracking-tight"
+              className="w-full flex items-center justify-center gap-2 bg-[#047857] hover:bg-[#065F46] text-white font-bold py-4 px-6 rounded-3xl active:bg-[#065F46] shadow-sm transition text-sm tracking-tight"
             >
               <Play className="w-4 h-4 fill-current"/> Resume Active Match
             </button>
@@ -104,7 +104,7 @@ export default function Dashboard() {
             <Link
               href="/setup"
               onClick={triggerFeedback}
-              className="w-full flex items-center justify-center bg-[#059669] active:bg-black text-white font-bold py-4 px-6 rounded-3xl active:scale-[0.98] shadow-[0_8px_25px_rgba(0,0,0,0.08)] transition text-sm tracking-tight"
+              className="w-full flex items-center justify-center bg-[#047857] hover:bg-[#065F46] active:bg-[#065F46] text-white font-bold py-4 px-6 rounded-3xl shadow-sm transition text-sm tracking-tight"
             >
               Start a match
             </Link>
@@ -114,6 +114,6 @@ export default function Dashboard() {
         {syncError && <p role="alert" className="px-1 text-sm text-red-700">{syncError} <button disabled={isSyncing} onClick={() => { setIsSyncing(true); void syncHistory(); }} className="min-h-11 px-2 font-semibold underline">Retry</button></p>}
         <HistoryList isSyncing={isSyncing} />
       </div>
-    </div>
+    </main>
   );
 }

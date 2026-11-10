@@ -11,16 +11,17 @@ test('play, setup, score, and history share the main page width', async ({ page,
   for (const width of [390, 640, 768, 1280]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto('/');
-    const mainWidth = await page.locator('body > div.w-full').first().evaluate(node => node.getBoundingClientRect().width);
+    const mainWidth = await page.getByRole('main').evaluate(node => node.getBoundingClientRect().width);
     const history = page.getByRole('region', { name: 'History and saved templates' });
     await expect(history).toBeVisible();
     expect(await history.evaluate(node => node.getBoundingClientRect().width)).toBe(mainWidth - (width >= 768 ? 48 : 32));
     for (const url of ['/setup', '/play', `/score/${game.id}`]) {
       if (url === '/play') {
+        await page.getByLabel('Player Group', { exact: true }).selectOption({ index: 1 });
         await page.getByRole('button', { name: 'Start Round', exact: true }).click();
         await expect(page.getByRole('heading', { name: 'Hole 1', exact: true })).toBeVisible();
       } else { await page.goto(url); }
-      await expect.poll(() => page.locator('body > div.w-full').first().evaluate(node => node.getBoundingClientRect().width)).toBe(mainWidth);
+      await expect.poll(() => page.getByRole('main').evaluate(node => node.getBoundingClientRect().width)).toBe(mainWidth);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
     await page.evaluate(() => localStorage.clear());

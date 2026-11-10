@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useGolfStore } from '@/src/store/useGolfStore';
 import { ChevronLeft, ChevronRight, Delete, Space } from 'lucide-react';
 import { saveRecord, toGameState, type GameRecord } from '@/src/lib/golf-api';
+import { cn } from '@/src/lib/utils';
 
 export default function PlayMatch() {
   const router = useRouter();
@@ -48,8 +49,8 @@ export default function PlayMatch() {
 
   if (!activeGame) {
     return (
-      <div className="w-full max-w-xl md:max-w-3xl mx-auto h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center antialiased">
-        <p className="text-sm font-bold text-[#8E8E93]">No active round found.</p>
+      <main className="w-full max-w-xl md:max-w-3xl mx-auto h-[100dvh] bg-white flex flex-col items-center justify-center p-6 text-center antialiased">
+        <p className="text-sm font-bold text-[#62626A]">No active round found.</p>
         <button
           onClick={() => {
             triggerFeedback('tap');
@@ -59,7 +60,7 @@ export default function PlayMatch() {
         >
           Setup Match
         </button>
-      </div>
+      </main>
     );
   }
 
@@ -133,7 +134,7 @@ export default function PlayMatch() {
   };
 
   return (
-    <div className="w-full max-w-xl md:max-w-3xl mx-auto h-[100dvh] bg-white text-black font-sans px-4 md:px-6 pt-6 subpixel-antialiased flex flex-col justify-between overflow-hidden select-none pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+    <main className="w-full max-w-xl md:max-w-3xl mx-auto h-dvh bg-white text-black font-sans px-4 md:px-6 pt-4 md:pt-6 subpixel-antialiased flex flex-col justify-between overflow-x-hidden overflow-y-auto select-none pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
 
       {/* iOS Top Bar Navigation */}
       <div className="flex items-center justify-between pb-3 pt-1 flex-shrink-0">
@@ -146,17 +147,21 @@ export default function PlayMatch() {
           <ChevronLeft className="w-5 h-5"/>
         </button>
         <div className="text-center space-y-0.5">
-          <h2 className="text-3xl font-extrabold text-[#1C1C1E] tracking-tight">Hole {activeHole}</h2>
-          <span className="text-sm font-bold uppercase tracking-widest text-white bg-[#ff9e59] border border-[#F1F5F9]/40 px-3.5 py-1 rounded-full inline-block">
-            Par {parVal}
-          </span>
-          <button disabled={isSaving} onClick={() => { if (handleSaveHoleState()) router.push('/'); }} className="block mx-auto px-2 py-2 text-xs font-semibold text-[#62626A]">Save & exit</button>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1C1C1E] tracking-tight">Hole {activeHole}</h1>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-sm font-bold uppercase tracking-widest text-[#9A3412] bg-[#FFF3E0] px-3 py-1 rounded-full">Par {parVal}</span>
+            <span role="status" className="text-xs text-[#62626A] tabular-nums">{stepIdx + 1} of {totalSteps}</span>
+          </div>
+          <div role="progressbar" aria-label="Round progress" aria-valuemin={1} aria-valuemax={totalSteps} aria-valuenow={stepIdx + 1} aria-valuetext={`${stepIdx + 1} of ${totalSteps} holes. Playing hole ${activeHole}.`} className="mx-auto flex w-36 gap-0.5 py-1">
+            {playedHoles.map((hole, index) => <span key={hole} className={cn('h-1.5 min-w-0 flex-1 rounded-full', index <= stepIdx ? 'bg-[#047857]' : 'bg-[#E5E5EA]')} />)}
+          </div>
+          <button disabled={isSaving} onClick={() => { if (handleSaveHoleState()) router.push('/'); }} className="block mx-auto min-h-11 px-3 py-2 text-sm font-semibold text-[#62626A]">Save & exit</button>
         </div>
         {stepIdx === totalSteps - 1 ? (
           <button
             onClick={handleFinishRound}
             disabled={isSaving}
-            className="bg-[#059669] text-white font-bold text-xs uppercase h-12 tracking-wider px-4 py-3 rounded-2xl transition active:scale-[0.97] shadow-[0_4px_12px_rgba(52,199,89,0.2)]"
+            className="bg-[#047857] text-white font-bold text-xs uppercase h-12 tracking-wider px-4 py-3 rounded-2xl transition shadow-sm"
           >
             {isSaving ? 'Saving…' : 'Finish'}
           </button>
@@ -173,13 +178,13 @@ export default function PlayMatch() {
       </div>
 
       {/* --- STANDARDIZED MID ZONE CONTAINER --- */}
-      <div className="flex-1 grid grid-rows-[auto_1fr] min-h-0 py-2">
+      <div className="flex-1 grid grid-rows-[auto_1fr] min-h-40 py-2">
 
         {/* Row 1: Input Monitor Block */}
-        <div className="w-full text-center font-mono text-3xl font-black tracking-widest text-[#34C759] h-14 flex items-center justify-center">
+        <div className="w-full text-center font-mono text-3xl font-bold tracking-widest tabular-nums text-[#047857] h-10 flex items-center justify-center">
             {rawString || (
-            <span className="text-[#8E8E93] text-[16px] tracking-normal font-sans font-bold opacity-60">
-                Fill the score..
+            <span className="text-[#62626A] text-[16px] tracking-normal font-sans font-medium">
+                Enter scores below
             </span>
             )}
         </div>
@@ -187,9 +192,9 @@ export default function PlayMatch() {
         {/* Row 2: Dynamic Stable Roster List Container */}
         <div className="w-full px-6 divide-y divide-[#F1F5F9]/50 overflow-y-auto min-h-0">
             {activeGame.players.map((p, idx) => (
-            <div key={p} className="flex justify-between py-3.5 items-center border-transparent">
+            <div key={p} className="flex justify-between py-2 items-center border-transparent">
                 <span className="text-xl font-bold text-[#1C1C1E] tracking-tight">{p}</span>
-                <span className={`font-mono text-xl font-black tracking-tight transition duration-100 ${currentScores[idx] ? 'text-black' : 'text-[#8E8E93]/20'}`}>
+                <span className={cn('font-mono text-xl font-bold tracking-tight tabular-nums', currentScores[idx] ? 'text-black' : 'text-[#62626A]')}>
                 {currentScores[idx] || '—'}
                 </span>
             </div>
@@ -208,7 +213,7 @@ export default function PlayMatch() {
               key={n}
               disabled={isSaving}
               onClick={() => handleKeyPress(String(n))}
-              className="w-full aspect-[4/2.8] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30"
+              className="w-full min-h-11 aspect-[4/2.4] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30"
             >
               {n}
             </button>
@@ -217,14 +222,14 @@ export default function PlayMatch() {
             aria-label="Next player's score (space)"
             disabled={isSaving}
             onClick={() => handleKeyPress('SPACE')}
-            className="w-full aspect-[4/2.8] bg-[#E8F5E9] active:bg-[#C8E6C9] text-[#2E7D32] rounded-2xl flex items-center justify-center shadow-xs transition"
+            className="w-full min-h-11 aspect-[4/2.4] bg-[#E8F5E9] active:bg-[#C8E6C9] text-[#2E7D32] rounded-2xl flex items-center justify-center shadow-xs transition"
           >
             <Space className="w-5 h-5 stroke-[2.5]" />
           </button>
           <button
             disabled={isSaving}
             onClick={() => handleKeyPress('0')}
-            className="w-full aspect-[4/2.8] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30 shadow-xs"
+            className="w-full min-h-11 aspect-[4/2.4] bg-[#F4F6F9] active:bg-[#F1F5F9]/60 text-[#1C1C1E] text-xl font-bold rounded-2xl flex items-center justify-center transition border border-[#F1F5F9]/30 shadow-xs"
           >
             0
           </button>
@@ -232,13 +237,13 @@ export default function PlayMatch() {
             aria-label="Delete last digit"
             disabled={isSaving}
             onClick={() => handleKeyPress('BACK')}
-            className="w-full aspect-[4/2.8] bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] rounded-2xl flex items-center justify-center shadow-xs transition"
+            className="w-full min-h-11 aspect-[4/2.4] bg-[#FFEBEE] active:bg-[#FFCDD2] text-[#C62828] rounded-2xl flex items-center justify-center shadow-xs transition"
           >
             <Delete className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
       </div>
 
-    </div>
+    </main>
   );
 }

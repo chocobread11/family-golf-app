@@ -39,6 +39,8 @@ An unfinished round stays on the device. Use **Save & exit** to return to the da
 
 Play, setup, scorecards, and history use the same responsive page width.
 
+Course templates use 3, 4, and 5 buttons to enter pars in hole order, with tap feedback, an undo button, and a running hole count and par total. Save at 9 or 18 holes. New match lineups and player groups start empty: **Add player** opens a focused name field and stays below the list. You can also load a saved group into match setup. The play screen shows pill progress as you move through the round.
+
 Photos are optional. To enable Cloudflare R2 uploads, configure `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, and `R2_PUBLIC_DOMAIN`, and allow the local app origin in the bucket's CORS settings. The app works without these settings. History photo uploads go through the app server, so they do not require browser upload CORS. Setup uses direct uploads and still needs the bucket CORS setting.
 
 Replacing or removing a photo also deletes its R2 file once no saved match uses it. Deleting a match follows the same rule. A persistent cleanup queue keeps failed deletions retryable; use **Retry photo cleanup** in history if that message appears. Canceling the editor leaves the saved photo unchanged.
